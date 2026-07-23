@@ -1,0 +1,9 @@
+/* Small personal overrides on top of the cosmo theme. */
+
+h1, h2, h3 {
+  font-weight: 600;
+}
+
+.navbar-title {
+  font-weight: 650;
+}

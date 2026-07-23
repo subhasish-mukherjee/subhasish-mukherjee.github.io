@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreetSphere — cities</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>StreetSphere</h1>
+  <nav><a href="./" class="active">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html">Compare</a><a href="about.html">About</a></nav>
+  <span class="muted" id="count"></span>
+</header>
+<main>
+  <p class="muted">Street-network order, hilliness, and walkability across world cities.
+     Click a column to sort (hover a header for its meaning — full definitions in
+     <a href="about.html">About</a>); click a city for its measure on the sphere.</p>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px">
+    <input id="q" type="search" placeholder="search city…" style="background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:5px 9px">
+    <select id="region"><option value="">all regions</option></select>
+    <select id="terrain"><option value="">all terrain</option></select>
+  </div>
+  <div style="overflow-x:auto"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+</main>
+<script src="js/common.js"></script>
+<script>
+const COLS = [
+  { k: "name", t: "City", tip: "click for the city page", d: null, s: r => r.name,
+    cell: r => `<a href="city.html?slug=${r.slug}">${r.name}</a>` },
+  { k: "terrain", t: "Terrain", tip: "registry tag (rough prior, not computed)", d: null, s: r => r.terrain,
+    cell: r => `<span class="tag">${r.terrain}</span>` },
+  { k: "core_area_km2", t: "core km²", tip: "area actually analyzed: the urban core (dense fabric) within the window — compare to land km² to see how much of the city is urban", d: 0, s: r => r.core_area_km2 },
+  { k: "extent", t: "Window", tip: "boundary = city limits minus low-density areas; disc = fixed-radius center window", d: null, s: r => r.extent ?? "disc",
+    cell: r => `<span class="tag">${r.extent ?? "disc"}</span>` },
+  { k: "phi", t: "φ order", tip: "orientation order: 1 = one perfect grid, 0 = maximal disorder (Boeing)", d: 3, s: r => r.phi },
+  { k: "entropy2d", t: "H₂D", tip: "Shannon entropy of the 36-bin bearing rose (ln 4 ≈ 1.386 grid … ln 36 ≈ 3.584 uniform)", d: 3, s: r => r.entropy2d },
+  { k: "spherical_entropy", t: "H sphere", tip: "normalized entropy of the (bearing × grade) measure over the ≤50%-grade band; 1 = uniform", d: 3, s: r => r.spherical_entropy },
+  { k: "vertical_fraction", t: "vert %", tip: "length-weighted mean squared vertical component of street direction — pure verticality", d: null, s: r => r.vertical_fraction, cell: r => pct(r.vertical_fraction, 2) },
+  { k: "sphericity", t: "spher.", tip: "τ₃/τ₁ of the orientation tensor: 0 = directions on a line, 1 = isotropic", d: 3, s: r => r.sphericity },
+  { k: "grid_angle", t: "grid θ°", tip: "dominant grid rotation from the 4-fold moment of the bearing measure", d: 1, s: r => r.grid_angle },
+  { k: "hilliness", t: "hilly %", tip: "length-weighted mean |grade| of drivable streets, %", d: 2, s: r => r.hilliness },
+  { k: "steep8", t: ">8% len", tip: "share of street length steeper than 8% grade", d: null, s: r => r.steep8, cell: r => pct(r.steep8, 1) },
+  { k: "walk_hilliness", t: "walk hilly %", tip: "mean |grade| of the pedestrian network (staircases via step counts)", d: 2, s: r => r.walk_hilliness },
+  { k: "steps_per_km", t: "stairs/km", tip: "connected staircases per km of street (way-split-proof: one staircase = one count)", d: 2, s: r => r.steps_per_km },
+  { k: "walkscore", t: "Walk Score®", tip: "official walkscore.com amenity index, mean over sampled core points (US/Canada; fetch with scripts/fetch_walkscores.jl)", d: 0, s: r => r.walkscore },
+  { k: "major_stairs", t: "major stairs", tip: "count of ≥30 m staircases — the civic stairway-street phenomenon (Pittsburgh's city steps), not short entrance flights. Extent-independent, so comparable everywhere", d: 0, s: r => r.major_stairs },
+  { k: "major_stairs_per_km_street", t: "major stairs/km", tip: "≥30 m staircases per km of walkable street — fabric-normalized so it stays comparable across disc vs boundary extents (unlike per-km², whose area denominator differs in kind)", d: 3, s: r => r.major_stairs_per_km_street },
+  { k: "circuity", t: "circuity", tip: "street length ÷ straight-line distance; 1 = perfectly straight", d: 3, s: r => r.circuity },
+  { k: "turn_rate", t: "turn °/100m", tip: "how much roads bend between intersections: total turning per 100 m of way (from OSM shape points)", d: 1, s: r => r.turn_rate },
+  { k: "pop_density", t: "pop/km²", tip: "approx. city-proper population ÷ city-proper land area (registry data — consistent units)", d: 0, s: r => r.pop_density },
+  { k: "signals_per_km2", t: "signals/km²", tip: "traffic signals per km² of urban core (OSM highway=traffic_signals)", d: 1, s: r => r.signals_per_km2 },
+  { k: "four_way", t: "4-way %", tip: "share of intersections with 4 streets — the hallmark of grids", d: null, s: r => r.four_way, cell: r => pct(r.four_way, 1) },
+];
+let rows = [], renderTable = null;
+
+function passes(r) {
+  const q = document.getElementById("q").value.toLowerCase();
+  const reg = document.getElementById("region").value;
+  const ter = document.getElementById("terrain").value;
+  return (!q || r.name.toLowerCase().includes(q)) &&
+         (!reg || r.region === reg) && (!ter || r.terrain === ter);
+}
+
+function render() { renderTable && renderTable(); }
+
+api("api/cities.json").then(d => {
+  rows = d;
+  for (const [id, key] of [["region", "region"], ["terrain", "terrain"]]) {
+    const sel = document.getElementById(id);
+    [...new Set(d.map(r => r[key]))].sort().forEach(v =>
+      sel.insertAdjacentHTML("beforeend", `<option>${v}</option>`));
+    sel.onchange = render;
+  }
+  document.getElementById("q").oninput = render;
+  renderTable = sortableTable(document.getElementById("tbl"), COLS, rows, {
+    sortKey: "hilliness", filter: passes,
+    onRender: n => document.getElementById("count").textContent = `${n} / ${rows.length} cities`,
+  });
+}).catch(e => document.querySelector("main").innerHTML += `<p class="muted">No data yet: ${e.message}. Run the pipeline first.</p>`);
+</script>
+</body>
+</html>

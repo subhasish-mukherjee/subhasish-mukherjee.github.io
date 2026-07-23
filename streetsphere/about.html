@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreetSphere — about the measures</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  main { max-width: 840px; }
+  section { margin-bottom: 26px; }
+  code { background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+         padding: 1px 5px; font-size: 13px; }
+  .formula { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+             padding: 10px 14px; margin: 10px 0; font-family: ui-monospace, monospace; font-size: 13px; }
+  h2 { margin-top: 26px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>StreetSphere</h1>
+  <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html">Compare</a><a href="about.html" class="active">About</a></nav>
+</header>
+<main>
+  <h2>What this is</h2>
+  <p class="muted">Every number here is computed from OpenStreetMap street networks plus a
+  global elevation model. The unifying idea: a city's streets define a <em>probability measure
+  over directions in 3D</em>, and the order of the street plan, the shape of the terrain, and
+  much of a city's "character" are properties of that measure and the network it comes from.
+  Methodology extends Boeing, <em>"Urban spatial order: street network orientation,
+  configuration, and entropy,"</em> Applied Network Science 4:67 (2019).</p>
+
+  <section id="window">
+    <h2>What area is analyzed (the comparison window)</h2>
+    <p>Each city is fetched as a disc around its center (default 6 km, grown automatically to
+    cover any registered neighborhood). Comparing raw discs would mix downtowns with suburbs,
+    so analysis is restricted to the <b>urban core</b>: intersections are counted on a 400 m
+    grid, cells under 25 intersections/km² are dropped (a deliberately permissive threshold —
+    proper city fabric like Pittsburgh's North Side stays; genuine low-density fringe goes),
+    and the mask is the connected dense region around the center. Sparse cells ringed by dense
+    fabric (≥4 of 8 neighbors) are <em>bridged</em>, so rivers, parks, and rail yards don't
+    sever the city. The <b>region map</b> on each city page shows exactly this: shaded cells =
+    analyzed core, outer ring = fetch disc, small circles = neighborhoods. The same absolute
+    rule for every city makes "the urban core" a comparable object.</p>
+  </section>
+
+  <section id="rose">
+    <h2>Bearing, the rose, and entropy H₂D</h2>
+    <p>Each street segment has a compass bearing; streets are bidirectional, so every segment
+    contributes its bearing and the opposite direction. Binning length-weighted bearings into
+    36 wedges of 10° gives the <b>rose</b> (see the <a href="gallery.html">gallery</a>);
+    its Shannon entropy measures directional spread:</p>
+    <div class="formula">H = −Σ pᵢ ln pᵢ &nbsp; ∈ [ln 4 ≈ 1.386 (single perfect grid), ln 36 ≈ 3.584 (uniform)]</div>
+  </section>
+
+  <section id="phi">
+    <h2>Orientation order φ</h2>
+    <div class="formula">φ = 1 − ((H − ln 4)/(ln 36 − ln 4))²</div>
+    <p><b>φ = 1</b>: one perfect grid (Chicago ≈ 0.9, Manhattan ≈ 0.91). <b>φ = 0</b>: streets
+    point every which way. Note φ measures <em>single-grid</em> alignment: a city made of
+    several differently-rotated grids (Los Angeles, Lima) scores low even though each patch is
+    locally gridded.</p>
+  </section>
+
+  <section id="sphere">
+    <h2>The direction measure on the sphere (and why the band)</h2>
+    <p>The 3D extension: each segment's full direction — bearing <em>and</em> grade angle — is
+    a unit vector <code>d = (cos g sin b, cos g cos b, sin g)</code>. Reversing the street
+    negates it, so directions live on the projective plane ℝP² = S²/{±1}: each city is an
+    empirical probability measure <code>μ = Σ wᵢ δ[dᵢ]</code>, weights ∝ street length. A flat
+    grid collapses to 4 points on the equator; a hilly, disordered city smears over the
+    sphere.</p>
+    <p>Real streets rarely exceed ~50% grade (26.6°), so the measure is binned on the band
+    |sin g| ≤ 0.447 with equal-area tiles — the tile sphere and unrolled heatmap on each city
+    page. Steeper mass (sanitized at 60%) collects in the top band ("grade ≥ …%+").
+    <b>H sphere</b> is this binned measure's normalized entropy: 0 = one tile, 1 = uniform
+    over the band.</p>
+  </section>
+
+  <section id="tensor">
+    <h2>Orientation tensor: vertical fraction &amp; sphericity</h2>
+    <p>Binning-free counterparts from the second moment <code>T = Σ wᵢ dᵢdᵢᵀ / Σ wᵢ</code>,
+    eigenvalues τ₁ ≥ τ₂ ≥ τ₃ (sum 1): <b>vertical %</b> = T₃₃, the mean squared vertical
+    component of street direction (exactly 0 for a flat city); <b>sphericity</b> = τ₃/τ₁
+    (0 = directions concentrate on a line, → 1 = isotropic disorder).</p>
+  </section>
+
+  <section id="grid">
+    <h2>Grid angle θ*</h2>
+    <p>The phase of the 4-fold circular moment <code>Σ wᵢ e^{4iθᵢ}</code> of the bearing
+    measure — "which way the dominant grid is rotated," in [0°, 90°). Manhattan's famous ~29°
+    falls straight out.</p>
+  </section>
+
+  <section id="curviness">
+    <h2>Curviness (turn rate) &amp; block length</h2>
+    <p>Circuity says a road wanders; <b>turn rate</b> says how sharply. Chains are maximal
+    paths through street-degree-2 nodes of the whole network — the <em>same-road</em>
+    definition: it heals OSM way-splits (a road chopped at every speed-limit change keeps its
+    turns) and breaks at intersections (a dogleg at a 4-way is a routing maneuver, not road
+    curvature). Ramps (<code>highway=*_link</code>) and roundabouts are excluded as junction
+    infrastructure. Turn rate = degrees of mid-road turning per 100 m of road: platted grids
+    sit near 0 (plus their genuine perimeter corners), Pittsburgh's healed switchbacks beat
+    San Francisco's, Kathmandu's lanes exceed 60. <b>curvy share</b> = fraction of length on
+    chains (≥100 m) turning ≥15°/100 m. The chains double as blocks: <b>mean block length</b>
+    is the average chain length between intersections. (Resampling finer than OSM's own shape
+    points would add nothing — between points the road is recorded straight.)</p>
+  </section>
+
+  <section id="hilliness">
+    <h2>Hilliness</h2>
+    <p>Per-segment grade = rise/run from a 30 m-class elevation model (AWS terrarium tiles),
+    with hygiene: bridges/tunnels excluded (the model sees terrain, not the roadway), segments
+    shorter than a pixel (~15 m) excluded, implausible values (&gt;60%) dropped.
+    <b>hilly %</b> = length-weighted mean |grade|; <b>&gt;8% len</b> = share of length steeper
+    than 8%; each city page shows the full distribution as the <b>hill fan</b> (wedges at
+    their true inclination from horizontal, mirrored like the axial measure) and the
+    elevation-angle marginal.</p>
+  </section>
+
+  <section id="walk">
+    <h2>Walkability &amp; staircases</h2>
+    <p>Computed on the pedestrian network. A staircase's grade comes from its tagged step
+    count (≈0.17 m/step) or the elevation model — never rise/run of its tiny footprint.
+    <b>walk hilly %</b> is the mean |grade| a pedestrian faces, staircases included.</p>
+    <p><b>Counting staircases honestly:</b> a "staircase" is a <em>connected component</em> of
+    steps segments — one staircase split into several OSM ways counts once. Cities also differ
+    in what they map: San Francisco records thousands of short entrance flights (mean ≈16 m);
+    Pittsburgh's fame rests on long municipal stairway-streets (mean ≈31 m). A <b>major
+    staircase</b> is a component ≥30 m — the civic stairway-street phenomenon, not an entrance
+    flight. The same ≥30 m rule is applied on every continent.</p>
+    <p><b>Comparing across cities.</b> Raw counts are the most honest ranking: by <b>major
+    stairs</b> Pittsburgh (≈400) is America's staircase capital and 4th worldwide, behind only
+    La Paz, Valparaíso, and Prague. Turning that into a <em>density</em> needs care, because the
+    analyzed window differs by extent (see below): a per-<b>km²</b> figure divides by area, so a
+    boundary city measured over its whole footprint (Pittsburgh, 131 km²) looks far sparser than
+    a disc city measured over just its dense 6 km core (Valparaíso, 38 km²) — an artifact, not a
+    real gap. We therefore headline <b>major stairs / km of walkable street</b>, which normalizes
+    by the pedestrian fabric itself and stays comparable across disc and boundary cities; the
+    area-based per-km² figure remains on each city page, flagged as extent-sensitive. Coverage
+    caveat: some regions (e.g. South Asia) rarely tag steps at all.</p>
+  </section>
+
+  <section id="network">
+    <h2>Network character: signals, one-way, bridges, connectivity</h2>
+    <p><b>signals/km²</b> — traffic signals (<code>highway=traffic_signals</code> nodes) per
+    km² of urban core; <b>signals/intersection</b> normalizes by intersection count.
+    <b>one-way share</b> and <b>bridge share</b> are length-weighted shares of the drive
+    network. <b>4-way %</b> (the grid hallmark), dead-end share, mean streets/intersection,
+    and <b>circuity</b> (street length ÷ straight-line distance, ≥1) complete the
+    connectivity picture.</p>
+  </section>
+
+  <section id="population">
+    <h2>Population &amp; density</h2>
+    <p><b>Population</b> and <b>land area</b> are approximate city-proper figures entered as
+    registry data — labels, not measurements — chosen as a <em>consistent pair</em> (the same
+    administrative unit), so <b>pop/km²</b> = population ÷ city-proper land area is honest
+    (Manhattan ≈ 27,600/km²). We deliberately do not divide by the analyzed-core area: the
+    core mask can flood across municipal lines (Manhattan's crosses into Brooklyn and Jersey
+    City), which would mismatch numerator and denominator. Computed densities over the core —
+    intersections/km², street km/km² — are separate, fully-measured metrics.</p>
+  </section>
+
+  <section id="mobility">
+    <h2>Mobility: OSM infrastructure shares vs Walk Score®</h2>
+    <p>Two distinct families. <b>OSM infra shares</b> — sidewalk / bike-infra / transit-lane
+    share of <em>tagged</em> street length — are transparent, global, computed from our own
+    data; they measure infrastructure presence and undercount where tagging is sparse.
+    <b>Walk Score® / Bike Score® / Transit Score®</b> (shown when fetched) are the official
+    amenity-proximity indices from <a href="https://www.walkscore.com">walkscore.com</a>
+    (Redfin): point-based, so a city's value is the mean over sampled urban-core points and a
+    neighborhood's is its center point; coverage US/Canada (elsewhere "—"). Fetch with your
+    free key: <code>julia --project=. scripts/fetch_walkscores.jl YOUR_KEY</code>. Scores
+    courtesy of <a href="https://www.walkscore.com">Walk Score</a>.</p>
+  </section>
+
+  <section id="traffic">
+    <h2>Traffic proxy (betweenness)</h2>
+    <p>Real traffic volumes are proprietary or US-only; we use sampled <em>betweenness
+    centrality</em> on the routing graph — how many shortest paths cross each street — as an
+    honest through-traffic model. Weighting the direction measure by it asks "which way does
+    the through-traffic point?" It's a model, not a measurement, disc-clipping biases it
+    toward the center, and it can be toggled off everywhere.</p>
+  </section>
+
+  <section id="klvsw">
+    <h2>Why Wasserstein and not KL divergence?</h2>
+    <p>Raw KL divergence is unsuitable for direction measures: asymmetric, <em>infinite</em>
+    whenever one city has mass in a bin the other leaves empty, and geometry-blind — a grid
+    shifted by one bin-width is as KL-far from itself as from uniform noise. Wasserstein is
+    built on the sphere's metric, so nearby directions cost little — which is what "similar
+    street plans" should mean. The repaired form of KL — <b>Jensen–Shannon divergence</b>
+    (symmetric, finite, ∈[0,1]), minimized over rotations — is the "JS divergence" option: it
+    measures <em>overlap</em>, a deliberately different question from the <em>work to
+    morph</em>. High JS + low W₂ = different exact directions, similar overall shape.</p>
+  </section>
+
+  <section id="distances">
+    <h2>City similarity: the distances</h2>
+    <ul>
+      <li><b>sphere W₂ — 3D</b>: full street-plan shape (bearing × grade), minimized over all
+        rotations about the vertical axis (two identical grids at different orientations are
+        distance ≈ 0); Sinkhorn-computed on a coarsened measure for speed;</li>
+      <li><b>grid W₂ — 2D</b>: orientation only (bearing marginal, no elevation),
+        rotation-aligned circular Wasserstein — purely "how similar are the grids";</li>
+      <li><b>elevation W₂</b>: 1D Wasserstein between grade-angle distributions — a pure
+        hilliness distance, blind to orientation;</li>
+      <li><b>JS divergence</b>: rotation-aligned measure overlap (see above).</li>
+    </ul>
+    <p id="normalization"><b>Normalization:</b> each kind lives on a ground space with its own
+    diameter (π/2 on the projective sphere; 90° on the bearing circle; 26.6° on the grade
+    interval). Every matrix is divided by that diameter, so all distances read as a
+    <em>fraction of the maximum possible transport</em>, in [0,1], comparable across kinds
+    (JS by its bound ln 2). The <b>MDS embedding</b> places cities in the plane so pairwise
+    distances are respected as well as possible — clusters are families of similarly-built
+    cities; each city page lists nearest neighbors under every distance. In compare overlays, each
+    rose is drawn as a stepped outline in absolute √proportions (weights sum to 1 per city),
+    so directional concentration compares directly across cities.</p>
+  </section>
+
+  <section id="neighborhoods">
+    <h2>Neighborhoods</h2>
+    <p>Any registered neighborhood (one line in <code>data/neighborhoods.toml</code>; the
+    fetch disc grows automatically to cover it) gets the same measures at neighborhood scale —
+    rose card, φ, turn rate, hilliness, staircases, mobility shares, Walk Score® when fetched —
+    sliced from the city's cached network at zero download cost. The per-city sortable table
+    makes intra-city contrasts visible: Nob Hill's perfect grid on 7% grades, Squirrel Hill as
+    Pittsburgh's curviest quarter, the Loop vs Wicker Park.</p>
+  </section>
+
+  <section>
+    <h2>Sources &amp; reproducibility</h2>
+    <p class="muted">Street networks: OpenStreetMap via Overpass (drive + walk discs; admin
+    boundaries for flagship cities as sensitivity checks). Elevation: AWS Terrain Tiles
+    (terrarium; SRTM-class 30 m, US 10 m), bilinearly sampled, cached locally. Basemap:
+    Carto/OpenStreetMap (attribution on the map). Methodology: Boeing (2019) extended to ℝP²;
+    circular OT per Rabin–Delon–Gousseau (2011) / Delon–Salomon–Sobolevski (2010). Everything
+    is cached and incremental — adding a city is one command (~5 min); this dashboard reads
+    only precomputed JSON. Built in Julia — StreetSphere.jl.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+---
+title: "Subhasish Mukherjee"
+about:
+  template: trestles
+  # image: profile.jpg          # drop a photo in the repo root and uncomment
+  links:
+    - icon: github
+      text: GitHub
+      href: "https://github.com/YOUR_GITHUB_USERNAME"   # ← set me
+    - icon: envelope
+      text: Email
+      href: "mailto:subhasish.m.9@gmail.com"
+---
+
+I am a mathematics PhD student. My interests include <!-- e.g. metric geometry,
+optimal transport, and applications to urban structure -->.
+
+This site collects my [projects](projects/index.qmd) and
+[papers & reports](papers/index.qmd).
+
+## Recently
+
+- **[StreetSphere](/streetsphere/)** — street-network orientation as probability
+  measures on $\mathbb{RP}^2$: Wasserstein distances between cities, hilliness,
+  walkability, and staircase censuses across 84 world cities, with an interactive
+  dashboard.

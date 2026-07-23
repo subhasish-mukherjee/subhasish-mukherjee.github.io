@@ -1,0 +1,23 @@
+---
+title: "StreetSphere"
+description: "Street networks as probability measures on ℝP² — orientation entropy in 3D, Wasserstein distances between 84 world cities, hilliness, walkability, and staircase censuses."
+date: 2026-07-23
+---
+
+Every city's streets define a probability measure over *directions in 3D* —
+compass bearing crossed with grade. StreetSphere extends Boeing's street-network
+orientation entropy to the projective plane $\mathbb{RP}^2$, computes
+rotation-aligned Wasserstein and Jensen–Shannon distances between city measures,
+and derives comparable metrics for hilliness, walkability, staircase-street
+censuses, and street "character" across **84 world cities**.
+
+**[Open the interactive dashboard →](/streetsphere/)**
+
+Highlights:
+
+- A sortable master table of ~30 comparable metrics per city
+- Per-city pages: the direction measure on the sphere, bearing roses, hill fans,
+  street-character breakdowns, and a region map of the analyzed urban core
+- A distance heatmap + MDS embedding: which cities are built alike, up to rotation
+- Staircase censuses done honestly — union-find connected components, a ≥30 m
+  "major staircase" rule applied identically on every continent

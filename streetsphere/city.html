@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreetSphere — city</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<header>
+  <h1>StreetSphere</h1>
+  <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html">Compare</a><a href="about.html">About</a></nav>
+  <span class="muted" id="title"></span>
+</header>
+<main>
+  <div class="kpi" id="kpi"></div>
+  <div class="grid">
+    <div class="panel"><b>Direction measure on the sphere</b>
+      <label class="muted" style="float:right"><input type="checkbox" id="extrude"> 3D rose (extrude √weight)</label>
+      <div class="muted">Each tile is a (bearing × grade) bin; band spans grades 0–50%
+        (<a href="about.html#sphere">why?</a>). Antipodal tiles mirrored; ring = flat (equator).</div>
+      <div id="sphere" class="plot" style="height:420px"></div></div>
+    <div class="panel"><b>Unrolled: bearing × grade heatmap</b>
+      <div class="muted">the same measure flattened — rows are grade bands (top band = ≥ cap).</div>
+      <div id="unrolled" class="plot"></div></div>
+    <div class="panel"><b>Bearing measure (projected to the circle)</b>
+      <div class="muted">marginal over grade — Boeing's rose, 180°-symmetric (<a href="about.html#rose">?</a>).</div>
+      <div id="rose" class="plot"></div></div>
+    <div class="panel"><b>Hill fan — street inclination rose</b>
+      <div class="muted">the elevation-angle measure drawn at its true angle from horizontal
+        0% grade lies flat (horizontal); steeper grades fan up at ×3 exaggeration, ticked by grade %; radius peak-normalized
+        (<a href="about.html#hilliness">?</a>).</div>
+      <div id="elev" class="plot"></div></div>
+    <div class="panel"><b>Grade distribution (log)</b>
+      <div class="muted">the fan unrolled: share of street length by grade %, log y — small
+        differences among flat cities show as vertical offsets.</div>
+      <div id="elevdist" class="plot"></div></div>
+    <div class="panel"><b>Street character</b>
+      <div class="muted">full breakdown, colored per attribute: lane counts, sidewalk & cycleway
+        provision (among tagged roads), and transit-lane / alley share (of all length).</div>
+      <div id="attrs" class="plot" style="height:300px"></div></div>
+    <div class="panel"><b>Most similar cities</b>
+      <div class="muted">nearest by each Wasserstein distance (<a href="about.html#distances">?</a>).</div>
+      <div id="neighbors" style="padding-top:8px"></div></div>
+  </div>
+  <h2>Analyzed region</h2>
+  <div class="grid">
+    <div class="panel"><b>What this analysis covers</b>
+      <div class="muted">shaded cells = the density-derived urban core actually analyzed
+        (for boundary-extent cities this is the city limits minus low-density areas);
+        ring = fetch disc (disc-extent cities only); small circles = neighborhoods.</div>
+      <div id="region" class="plot" style="height:440px"></div></div>
+  </div>
+  <div id="nbsection" style="display:none">
+    <h2>Neighborhoods</h2>
+    <p class="muted">The same measures at neighborhood scale — how differently the roads can
+      feel within one city. Add a neighborhood with one line in
+      <code>data/neighborhoods.toml</code>.</p>
+    <div class="roses" id="nbcards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:14px"></div>
+    <table id="nbtable"><thead></thead><tbody></tbody></table>
+  </div>
+  <h2>Steepest named streets</h2>
+  <table id="steep"><thead><tr><th>Street</th><th>Grade %</th></tr></thead><tbody></tbody></table>
+</main>
+<script src="js/common.js"></script>
+<script>
+const slug = new URLSearchParams(location.search).get("slug");
+const gradePctOf = (iz, nz, zmax) =>
+  (100 * Math.tan(Math.asin((iz + 0.5) * zmax / nz))).toFixed(0);
+
+// --- sphere tile mesh: each (azimuth × z) bin is a colored quad on the band, antipodally
+// mirrored; ext > 0 extrudes tiles radially by √(w/wmax) — the 3D analog of rose wedges.
+function tileMesh(rep, ext) {
+  const { na, nz, weights } = rep.sphere, zmax = rep.sphere.zmax ?? 1;
+  const wmax = Math.max(...weights);
+  const x = [], y = [], z = [], I = [], J = [], K = [], intensity = [], text = [];
+  let v = 0;
+  for (let iz = 0; iz < nz; iz++) for (let ia = 0; ia < na; ia++) {
+    const w = weights[iz * na + ia];
+    const r = 1 + (w > 0 ? ext * Math.sqrt(w / wmax) : 0);
+    const az0 = ia * 2 * Math.PI / na, az1 = (ia + 1) * 2 * Math.PI / na;
+    const z0 = iz * zmax / nz, z1 = (iz + 1) * zmax / nz;
+    const gpct = gradePctOf(iz, nz, zmax);
+    const label = `bearing ${((ia + 0.5) * 360 / na).toFixed(0)}°, grade ${gpct}%` +
+                  (iz === nz - 1 ? "+" : "") + ` — ${(100 * w).toFixed(2)}%`;
+    for (const sgn of [1, -1]) {                        // antipodal mirror (axial measure)
+      for (const [az, zz] of [[az0, z0], [az1, z0], [az1, z1], [az0, z1]]) {
+        const h = Math.sqrt(Math.max(0, 1 - zz * zz));
+        x.push(sgn * r * h * Math.sin(az)); y.push(sgn * r * h * Math.cos(az)); z.push(sgn * r * zz);
+        text.push(label);
+      }
+      I.push(v, v); J.push(v + 1, v + 2); K.push(v + 2, v + 3);   // quad = 2 triangles
+      intensity.push(w, w);
+      v += 4;
+    }
+  }
+  return { type: "mesh3d", x, y, z, i: I, j: J, k: K,
+           intensity, intensitymode: "cell", cmin: 0, cmax: wmax,
+           colorscale: seqScale(), showscale: true, colorbar: { title: "share", len: 0.6 },
+           flatshading: true, lighting: { ambient: 0.85, diffuse: 0.4, specular: 0 },
+           text, hoverinfo: "text" };
+}
+
+function refTraces() {
+  const u = [], gx = [], gy = [], gz = [], eqx = [], eqy = [], eqz = [];
+  for (let i = 0; i <= 36; i++) u.push(i / 36 * 2 * Math.PI);
+  for (let j = 0; j <= 18; j++) {
+    const b = j / 18 * Math.PI, rx = [], ry = [], rz = [];
+    for (const a of u) { rx.push(Math.sin(b) * Math.cos(a)); ry.push(Math.sin(b) * Math.sin(a)); rz.push(Math.cos(b)); }
+    gx.push(rx); gy.push(ry); gz.push(rz);
+  }
+  for (const a of u) { eqx.push(Math.cos(a)); eqy.push(Math.sin(a)); eqz.push(0); }
+  return [
+    { type: "surface", x: gx, y: gy, z: gz, opacity: 0.08, showscale: false,
+      colorscale: [[0, "#888"], [1, "#888"]], hoverinfo: "skip" },
+    { type: "scatter3d", mode: "lines", x: eqx, y: eqy, z: eqz,
+      line: { color: isDark() ? "#e6e8ec" : "#1b1e24", width: 3 }, hoverinfo: "skip" },
+  ];
+}
+
+let REP = null;
+const sphereLayout = plotlyLayout({ showlegend: false, margin: { l: 0, r: 0, t: 6, b: 0 },
+  scene: { aspectmode: "cube", xaxis: { title: "E", showgrid: false },
+           yaxis: { title: "N", showgrid: false }, zaxis: { title: "up", showgrid: false } } });
+function drawSphere() {
+  const ext = document.getElementById("extrude").checked ? 0.35 : 0;
+  Plotly.react("sphere", [...refTraces(), tileMesh(REP, ext)], sphereLayout, PLOT_CFG);
+}
+document.getElementById("extrude").onchange = drawSphere;
+
+function drawUnrolled(rep) {
+  const { na, nz, weights } = rep.sphere, zmax = rep.sphere.zmax ?? 1;
+  const zrows = [], glabels = [];
+  for (let iz = 0; iz < nz; iz++) {
+    zrows.push(weights.slice(iz * na, (iz + 1) * na));
+    const g = gradePctOf(iz, nz, zmax);
+    glabels.push(g + (iz === nz - 1 ? "%+" : "%"));
+  }
+  const bearings = Array.from({ length: na }, (_, ia) => (ia + 0.5) * 360 / na);
+  Plotly.newPlot("unrolled", [{ type: "heatmap", z: zrows, x: bearings, y: glabels,
+      colorscale: seqScale(), hovertemplate: "bearing %{x:.0f}°, grade %{y} — %{z:.4f}<extra></extra>" }],
+    plotlyLayout({ xaxis: { title: "bearing (°)", dtick: 90 }, yaxis: { title: "grade" } }), PLOT_CFG);
+}
+
+function drawRose(rep) {
+  const b = rep.marginals.bearing;
+  const r = b.weights.map(Math.sqrt);                    // area-proportional
+  Plotly.newPlot("rose", [{ type: "barpolar", r: r.concat(r),
+      theta: b.centers.concat(b.centers.map(t => t + 180)), marker: { color: seriesMain() } }],
+    plotlyLayout({ polar: { angularaxis: { direction: "clockwise", rotation: 90 },
+                            radialaxis: { showticklabels: false } } }), PLOT_CFG);
+}
+
+// The hill fan: each grade-angle bin drawn as a wedge at its TRUE inclination from horizontal,
+// mirrored up/down (the measure is axial: climbing at +g = descending at −g) — a protractor of
+// how tilted the city's streets are. Radius ∝ √share (area-proportional, like the rose).
+const FAN_MAG = 3;   // magnification: real grades reach only ~27° (50%), drawn ×3 so the fan
+                     // opens across the quadrant (0° flat baseline → ~80° at 50% grade)
+function drawElev(rep) {
+  const fine = rep.marginals.elevation_fine;
+  const drawn = g => FAN_MAG * Math.atan(g / 100) * 180 / Math.PI;   // 0% → 0° (horizontal)
+  const bins = [];
+  let maxShare = 1e-12;
+  if (fine) {
+    const e = fine.grade_edges_pct, w = fine.weights;
+    for (let i = 0; i < w.length; i++)
+      if (w[i] > 0) { bins.push([e[i], i < e.length - 1 ? e[i + 1] : e[i] + 5, w[i], i === e.length - 1]);
+                      maxShare = Math.max(maxShare, w[i]); }
+  } else {
+    const e = rep.marginals.elevation;
+    for (let i = 0; i < e.weights.length; i++)
+      if (e.weights[i] > 0) { bins.push([100 * Math.tan(e.edges[i] * Math.PI / 180),
+                                         100 * Math.tan(e.edges[i + 1] * Math.PI / 180), e.weights[i], false]);
+                              maxShare = Math.max(maxShare, e.weights[i]); }
+  }
+  // 0% grade lies flat along the horizontal baseline (0°); steeper grades fan UP toward vertical.
+  // Radius is peak-normalized (tallest bin fills the circle) so every city's fan scales the same.
+  const theta = [], r = [], width = [], text = [];
+  for (const [gLo, gHi, share, last] of bins) {
+    const aLo = drawn(gLo), aHi = drawn(gHi);
+    theta.push((aLo + aHi) / 2);
+    width.push(Math.max(aHi - aLo, 0.5));
+    r.push(Math.sqrt(share / maxShare));
+    const trueMid = Math.atan((gLo + gHi) / 200) * 180 / Math.PI;
+    text.push(`grade ${gLo}–${last ? "∞" : gHi}% (${trueMid.toFixed(1)}°) — ${(100 * share).toFixed(2)}%`);
+  }
+  const tickvals = [], ticktext = [];   // grade-% delineations at their ×3-drawn angle
+  for (const g of [0, 5, 10, 20, 30, 40, 50]) { tickvals.push(drawn(g)); ticktext.push(g + "%"); }
+  Plotly.newPlot("elev", [{ type: "barpolar", r, theta, width, text, hoverinfo: "text",
+      marker: { color: seriesMain() } }],
+    plotlyLayout({ showlegend: false, margin: { l: 0, r: 0, t: 6, b: 0 },
+      polar: { sector: [0, 90],
+               angularaxis: { tickmode: "array", tickvals, ticktext, rotation: 0, direction: "counterclockwise" },
+               radialaxis: { range: [0, 1], showticklabels: false } } }), PLOT_CFG);
+}
+
+function drawElevDist(rep) {
+  const fe = rep.marginals.elevation_fine;
+  if (!fe) return;
+  const e = fe.grade_edges_pct;
+  const centers = binCenters(e.concat([e[e.length - 1] + 5]));
+  Plotly.newPlot("elevdist", [{ type: "scatter", mode: "lines", x: centers, y: fe.weights,
+      line: { shape: "hvh", color: seriesMain() }, fill: "tozeroy", fillcolor: seriesMain() + "22",
+      hovertemplate: "grade %{x:.0f}% — %{y:.4f}<extra></extra>" }],
+    plotlyLayout({ xaxis: { title: "grade (%)" }, yaxis: { title: "share of length", type: "log" } }), PLOT_CFG);
+}
+
+function drawAttrs(rep) {
+  const S = SERIES(), a = rep.attributes, s = rep.scalars;
+  // multi-valued attributes keep their full distribution (share among tagged streets); the
+  // presence features (transit lane, alley) show their honest ratio over all street length.
+  const groups = [
+    ["Lanes", a.lanes.dist, 0, "of roads with a lane tag"],
+    ["Sidewalks", a.sidewalks.dist, 1, "of roads specifying sidewalks"],
+    ["Cycleway", a.cycleway.dist, 2, "of roads specifying cycleways"],
+    ["Transit lane", { present: s.transit_share }, 5, "of all street length"],
+    ["Alley", { present: s.alley_share }, 3, "per street length (walk net)"],
+  ];
+  const traces = groups.map(([name, dist, slot, base]) => {
+    const keys = Object.keys(dist).filter(k => dist[k] != null && dist[k] > 0.002).sort();
+    return { type: "bar", orientation: "h", name,
+      y: keys.map(k => k === "present" ? name : `${name}: ${k}`),
+      x: keys.map(k => 100 * dist[k]), marker: { color: S[slot] },
+      hovertemplate: `%{y}: %{x:.1f}% ${base}<extra></extra>` };
+  });
+  // no legend — each bar's y-label already names its attribute; colour just groups them
+  // visually, so a legend only stole space and overlapped the bars
+  Plotly.newPlot("attrs", traces, plotlyLayout({ barmode: "group", showlegend: false,
+      margin: { l: 108, r: 10, t: 22, b: 34 }, bargap: 0.25,
+      title: { text: s.mean_lanes != null ? `mean ${s.mean_lanes.toFixed(1)} lanes/road` : "", font: { size: 11 }, x: 0.02, xanchor: "left" },
+      xaxis: { title: "% of length", ticksuffix: "%" }, yaxis: { automargin: true } }), PLOT_CFG);
+}
+// nearest cities by each distance kind, computed client-side from the matrices
+async function drawNeighbors() {
+  const KINDS = [["sphere", "sphere W₂ (3D, mod rot.)"], ["grid", "grid W₂ (2D orientation)"], ["elevation", "elevation W₂ (hilliness)"], ["js", "JS overlap"]];
+  let html = "";
+  for (const [kind, label] of KINDS) {
+    try {
+      const d = await api(`api/distances/${kind}.json`);
+      const i = d.slugs.indexOf(slug);
+      if (i < 0) continue;
+      const near = d.slugs.map((s, j) => ({ s, name: d.labels[j], v: d.matrix[i][j] }))
+        .filter(o => o.s !== slug).sort((a, b) => a.v - b.v).slice(0, 5);
+      html += `<div style="margin-bottom:10px"><span class="tag">${label}</span> ` +
+        near.map(o => `<a href="city.html?slug=${o.s}">${o.name}</a> <span class="muted">${o.v.toFixed(3)}</span>`).join(" · ") + "</div>";
+    } catch (e) { /* distances not computed yet */ }
+  }
+  document.getElementById("neighbors").innerHTML = html || "<span class='muted'>distances not computed yet</span>";
+}
+
+// per-neighborhood mini-cards (SVG rose + key scalars) + the full sortable metrics table
+let NBS = [];
+async function drawNeighborhoodCards() {
+  try {
+    NBS = await api(`api/neighborhoods/${slug}.json`);
+    if (!NBS.length) return;
+    document.getElementById("nbsection").style.display = "";
+    document.getElementById("nbcards").innerHTML = NBS.map(nb =>
+      `<div style="text-align:center;padding:10px 6px;background:var(--panel);border:1px solid var(--line);border-radius:10px">
+        <b style="font-size:13px">${nb.name}</b>
+        ${roseSVG(nb.rose, { size: 100 })}
+        <div class="muted" style="font-size:11px">
+          φ ${fmt(nb.phi, 2)} · hilly ${fmt(nb.hilliness, 1)}% · steps/km ${fmt(nb.steps_per_km, 1)}<br>
+          grid θ ${fmt(nb.grid_angle, 0)}° · ${fmt(nb.length_km, 0)} km
+        </div>
+      </div>`).join("");
+    sortableTable(document.getElementById("nbtable"), [
+      { k: "name", t: "Neighborhood", s: n => n.name, cell: n => `<b>${n.name}</b>` },
+      { k: "n_segments", t: "segs", d: 0, s: n => n.n_segments },
+      { k: "length_km", t: "km", d: 1, s: n => n.length_km },
+      { k: "phi", t: "φ order", tip: "1 = perfect grid", d: 2, s: n => n.phi },
+      { k: "entropy2d", t: "H₂D", d: 2, s: n => n.entropy2d },
+      { k: "spherical_entropy", t: "H sph", d: 2, s: n => n.spherical_entropy },
+      { k: "grid_angle", t: "grid θ°", d: 0, s: n => n.grid_angle },
+      { k: "turn_rate", t: "turn °/100m", tip: "mid-road turning (same-road chains)", d: 1, s: n => n.turn_rate },
+      { k: "hilliness", t: "hilly %", d: 1, s: n => n.hilliness },
+      { k: "frac_steeper_8pct", t: ">8%", s: n => n.frac_steeper_8pct, cell: n => pct(n.frac_steeper_8pct, 0) },
+      { k: "steps_per_km", t: "steps/km", d: 2, s: n => n.steps_per_km },
+      { k: "walk_hilliness", t: "walk hilly %", d: 1, s: n => n.walk_hilliness },
+      { k: "sidewalk_share", t: "sidewalk", s: n => n.sidewalk_share, cell: n => pct(n.sidewalk_share, 0) },
+      { k: "bike_share", t: "bike", s: n => n.bike_share, cell: n => pct(n.bike_share, 0) },
+      { k: "walkscore", t: "Walk Score®", tip: "walkscore.com, neighborhood center point", d: 0, s: n => n.walkscore },
+    ], NBS, { sortKey: "hilliness" });
+  } catch (e) { /* no neighborhoods defined for this city */ }
+}
+
+// Region map (scattermap + MapLibre carto-positron, tokenless): urban-core mask as one GeoJSON
+// fill layer, fetch disc + neighborhood circles as one null-separated lines trace.
+function drawRegionMap(rep) {
+  const core = rep.meta.core;
+  const center = [Number(rep.meta.lat), Number(rep.meta.lon)];
+  const radius = Number(rep.meta.fetch_radius_m ?? rep.meta.radius_m ?? 6000);
+
+  const rings = [];   // {name, lons, lats}
+  function circleRing(name, lat, lon, r, n = 72) {
+    const lons = [], lats = [], mLon = mPerLon(lat);
+    for (let i = 0; i <= n; i++) {
+      const t = 2 * Math.PI * i / n;
+      lons.push(lon + r * Math.sin(t) / mLon);
+      lats.push(lat + r * Math.cos(t) / M_PER_LAT);
+    }
+    rings.push({ name, lons, lats });
+  }
+  const isBoundary = rep.meta.extent === "boundary";
+  if (!isBoundary) circleRing("fetch disc", center[0], center[1], radius);
+  NBS.forEach(nb => circleRing(nb.name, Number(nb.lat), Number(nb.lon), Number(nb.radius_m)));
+
+  const trace = { type: "scattermap", mode: "lines",
+    lon: rings.flatMap(r => [...r.lons, null]), lat: rings.flatMap(r => [...r.lats, null]),
+    line: { width: 1.6, color: seriesMain() }, hoverinfo: "text",
+    text: rings.flatMap(r => [...Array(r.lons.length).fill(r.name), null]) };
+
+  const layers = [];
+  if (core && core.cells) {
+    // cell rings mirror _cell_of's local equirectangular projection exactly
+    const [lat0, lon0] = core.origin.map(Number), c = Number(core.cell_m);
+    const mLon0 = mPerLon(lat0);
+    const lonOf = k => lon0 + k * c / mLon0, latOf = k => lat0 + k * c / M_PER_LAT;
+    const polys = core.cells.map(([ix, iy]) => [[
+      [lonOf(ix), latOf(iy)], [lonOf(ix + 1), latOf(iy)],
+      [lonOf(ix + 1), latOf(iy + 1)], [lonOf(ix), latOf(iy + 1)], [lonOf(ix), latOf(iy)]]]);
+    layers.push({ sourcetype: "geojson", type: "fill", color: seriesMain(), opacity: 0.22,
+      source: { type: "Feature", geometry: { type: "MultiPolygon", coordinates: polys } } });
+  }
+  const zoom = Math.log2(40075016.686 * Math.cos(center[0] * Math.PI / 180) * 420 /
+                         (512 * 2 * radius)) - 0.2;
+  const layout = plotlyLayout({ showlegend: false, margin: { l: 0, r: 0, t: 0, b: 0 },
+    map: { style: isDark() ? "carto-darkmatter" : "carto-positron",
+           center: { lat: center[0], lon: center[1] }, zoom, layers } });
+  try {
+    Plotly.newPlot("region", [trace], layout, PLOT_CFG);
+  } catch (e) {   // remote style unreachable → plain background, overlays still drawn
+    layout.map.style = "white-bg";
+    Plotly.newPlot("region", [trace], layout, PLOT_CFG);
+  }
+}
+
+api(`api/city/${slug}.json`).then(rep => {
+  REP = rep;
+  document.getElementById("title").textContent = rep.meta.name;
+  const s = rep.scalars;
+  document.getElementById("kpi").innerHTML = [
+    ["φ order", fmt(s.phi, 3)], ["H sphere", fmt(s.spherical_entropy, 3)],
+    ["hilliness %", fmt(s.hilliness.score, 2)], [">8% grade", pct(s.hilliness.frac_steeper_8pct)],
+    ["vertical %", pct(s.vertical_fraction, 2)], ["grid θ°", fmt(s.grid_angle, 1)],
+    ["walk hilly %", fmt(rep.walk.hilliness_score, 2)], ["major stairs", fmt(rep.walk.major_stairs, 0)],
+    ["major stairs/km", fmt(rep.walk.major_stairs_per_km_street, 3)],
+    ["signals/km²", fmt(s.signals_per_km2, 1)], ["block m", fmt(s.mean_block_m, 0)],
+    ["pop/km²", fmt(s.pop_density, 0)], ["core km²", fmt(rep.meta.area_km2, 0)],
+  ].map(([k, v]) => `<div><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  drawSphere(); drawUnrolled(rep); drawRose(rep); drawElev(rep); drawElevDist(rep); drawAttrs(rep);
+  drawNeighbors();
+  drawNeighborhoodCards().then(() => drawRegionMap(rep));   // map needs NBS for circles
+  document.querySelector("#steep tbody").innerHTML = rep.steepest_streets.map(r =>
+    `<tr><td>${r.name}</td><td>${fmt(r.grade_pct, 1)}</td></tr>`).join("");
+}).catch(e => document.querySelector("main").innerHTML = `<p class="muted">${e.message}</p>`);
+</script>
+</body>
+</html>

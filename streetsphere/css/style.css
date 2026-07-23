@@ -1,0 +1,39 @@
+:root {
+  --bg: #0f1116; --panel: #171a21; --fg: #e6e8ec; --muted: #9aa3b2;
+  --line: #262b36; --accent: #5aa9e6; --accent2: #2a7f62;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f7f8fa; --panel: #fff; --fg: #1b1e24; --muted: #5b6472;
+          --line: #e2e5ea; --accent: #1f6fb2; --accent2: #2a7f62; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+header { padding: 14px 22px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; gap: 20px; position: sticky; top: 0; background: var(--bg); z-index: 5; }
+header h1 { font-size: 17px; margin: 0; font-weight: 650; }
+header nav { margin-right: auto; }   /* push count/title/selects to the right edge */
+header nav a { color: var(--muted); text-decoration: none; margin-right: 16px; }
+header nav a:hover, header nav a.active { color: var(--accent); }
+main { padding: 20px 22px; max-width: 1400px; margin: 0 auto; }
+.muted { color: var(--muted); }
+h2 { font-size: 15px; font-weight: 620; margin: 22px 0 10px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 49px; background: var(--bg); }
+th:hover { color: var(--fg); }
+th.sorted::after { content: " ▾"; color: var(--accent); }
+th.sorted.asc::after { content: " ▴"; }
+tbody tr:hover { background: var(--panel); }
+td a { color: var(--accent); text-decoration: none; }
+.tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 1px 7px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.plot { width: 100%; height: 360px; }
+.kpi { display: flex; flex-wrap: wrap; gap: 18px; margin: 8px 0 6px; }
+.kpi div { min-width: 90px; }
+.kpi .v { font-size: 20px; font-weight: 650; }
+.kpi .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+select, button { background: var(--panel); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 7px; padding: 5px 9px; font-size: 13px; }

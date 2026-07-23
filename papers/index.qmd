@@ -1,0 +1,20 @@
+---
+title: "Papers & Reports"
+listing:
+  contents: "."
+  type: default
+  sort: "date desc"
+  fields: [title, description, date]
+---
+
+<!-- Add one .qmd stub per paper/report in this directory, e.g.:
+
+---
+title: "A note on such-and-such"
+description: "Short abstract or one-line summary."
+date: 2026-05-01
+---
+
+[PDF](pdfs/my-paper.pdf)
+
+and put the PDF itself in papers/pdfs/. -->

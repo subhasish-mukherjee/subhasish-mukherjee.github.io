@@ -1,0 +1,36 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+    - "projects/"
+    - "papers/"
+    - "!streetsphere/"        # static export — passthrough only, never rendered by Quarto
+  resources:
+    - "streetsphere/"         # copied verbatim into _site/streetsphere/
+    - "papers/pdfs/"
+
+website:
+  title: "Subhasish Mukherjee"
+  # site-url: "https://YOURDOMAIN"   # uncomment + set once the domain is purchased
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: projects/index.qmd
+        text: Projects
+      - href: papers/index.qmd
+        text: Papers & Reports
+      - href: cv.qmd
+        text: CV
+    right:
+      - icon: github
+        href: "https://github.com/YOUR_GITHUB_USERNAME"   # ← set me
+  page-footer:
+    center: "© 2026 Subhasish Mukherjee"
+
+format:
+  html:
+    theme: [cosmo, styles.css]
+    toc: false
+    html-math-method: mathjax

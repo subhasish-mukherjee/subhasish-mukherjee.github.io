@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreetSphere — gallery</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .roses { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .rose-card { text-align: center; padding: 10px 6px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 10px; }
+  .rose-card a { color: var(--fg); text-decoration: none; font-weight: 600; font-size: 13px; }
+  .rose-card .sub { font-size: 11px; color: var(--muted); }
+  .rose-card svg { width: 110px; height: 110px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>StreetSphere</h1>
+  <nav><a href="./">Cities</a><a href="gallery.html" class="active">Gallery</a><a href="compare.html">Compare</a><a href="about.html">About</a></nav>
+  <label class="muted">region&nbsp;
+    <select id="region"><option value="">all regions</option></select></label>
+  <label class="muted">sort by&nbsp;
+    <select id="sort">
+      <option value="phi">grid order φ</option>
+      <option value="hilliness">hilliness</option>
+      <option value="entropy2d">entropy</option>
+      <option value="turn_rate">curviness</option>
+      <option value="name">name</option>
+    </select></label>
+</header>
+<main>
+  <p class="muted">Every city's bearing rose (length-weighted, area-proportional wedges) — after
+    <a href="https://geoffboeing.com/2019/09/urban-street-network-orientation/">Boeing (2019)</a>.
+    A tight cross = a grid; a disc = disorder. Click through for the 3D measure.</p>
+  <div class="roses" id="roses"></div>
+</main>
+<script src="js/common.js"></script>
+<script>
+let ROSES = [];
+function render() {
+  const k = document.getElementById("sort").value;
+  const reg = document.getElementById("region").value;
+  const shown = reg ? ROSES.filter(r => r.region === reg) : ROSES;
+  const sorted = [...shown].sort((a, b) =>
+    k === "name" ? a.name.localeCompare(b.name) : ((b[k] ?? -1) - (a[k] ?? -1)));
+  document.getElementById("roses").innerHTML = sorted.map(r =>
+    `<div class="rose-card"><a href="city.html?slug=${r.slug}">${r.name}</a>
+     ${roseSVG(r.proportions)}
+     <div class="sub">φ ${fmt(r.phi, 2)} · hilly ${fmt(r.hilliness, 1)}% · turn ${fmt(r.turn_rate, 0)}</div></div>`).join("");
+}
+document.getElementById("sort").onchange = render;
+api("api/roses.json").then(d => {
+  ROSES = d;
+  const sel = document.getElementById("region");
+  [...new Set(d.map(r => r.region))].sort().forEach(r =>
+    sel.insertAdjacentHTML("beforeend", `<option value="${r}">${r}</option>`));
+  sel.onchange = render;
+  render();
+})
+  .catch(e => document.querySelector("main").innerHTML += `<p class="muted">${e.message}</p>`);
+</script>
+</body>
+</html>

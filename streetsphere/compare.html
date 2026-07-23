@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StreetSphere — compare</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<header>
+  <h1>StreetSphere</h1>
+  <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html" class="active">Compare</a><a href="about.html">About</a></nav>
+</header>
+<main>
+  <h2>Cities as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
+  <p class="muted">The sphere distance compares street-direction measures on ℝP²
+    <em>modulo rotation about the vertical axis</em> — grids match however they are oriented.
+    MDS embeds the distance matrix into 2D: nearby points are similarly-built cities.</p>
+  <label class="muted">distance&nbsp;
+    <select id="kind">
+      <option value="sphere">sphere W₂ — 3D (bearing × grade, mod rotation)</option>
+      <option value="grid">grid W₂ — 2D orientation, no elevation (mod rotation)</option>
+      <option value="elevation">elevation W₂ — hilliness only</option>
+      <option value="js">JS divergence — measure overlap (geometry-blind)</option>
+    </select></label>
+  <label class="muted">order&nbsp;
+    <select id="order">
+      <option value="phi">by φ (grid order)</option>
+      <option value="hilliness">by hilliness</option>
+      <option value="mds">by MDS-1 (similarity)</option>
+      <option value="name">by name</option>
+    </select></label>
+  <label class="muted"><input type="checkbox" id="bigheat"> enlarge heatmap</label>
+  <div class="grid" id="distgrid">
+    <div class="panel" id="heatpanel"><b>Distance heatmap</b>
+      <span class="muted">ordered so structure is visible — near-diagonal blocks are families of
+        similar cities; click a row label or MDS point to open the city.</span>
+      <div id="heat" class="plot" style="height:600px"></div></div>
+    <div class="panel" id="mdspanel"><b>MDS embedding</b> <span class="muted">(color = region)</span>
+      <div id="mds" class="plot" style="height:600px"></div></div>
+  </div>
+
+  <h2>Metric scatter — pick any two axes</h2>
+  <div style="display:flex; gap:10px; margin-bottom:8px">
+    <label class="muted">x <select id="xaxis"></select></label>
+    <label class="muted">y <select id="yaxis"></select></label>
+    <label class="muted">region <select id="regionfilter"><option value="">all regions</option></select></label>
+    <label class="muted"><input type="checkbox" id="logx"> log x</label>
+    <label class="muted"><input type="checkbox" id="logy"> log y</label>
+  </div>
+  <div class="panel"><div id="scatter" class="plot" style="height:560px"></div></div>
+
+  <h2>Overlay cities</h2>
+  <p class="muted">Select up to 3 cities to superimpose their bearing roses and elevation-angle
+    distributions.</p>
+  <div id="citypick" style="display:flex; gap:8px; margin-bottom:8px"></div>
+  <div class="panel"><b>Street character (overlaid)</b>
+    <div class="muted">feature share of street length per selected city — the character
+      comparison.</div>
+    <div id="ochar" class="plot"></div></div>
+  <div class="grid">
+    <div class="panel"><b>Bearing roses (overlaid)</b> <span class="muted">— absolute
+      √proportions (each city's weights sum to 1): outline size directly compares
+      directional concentration</span><div id="oroses" class="plot"></div></div>
+    <div class="panel"><b>Elevation-angle marginals (overlaid)</b><div id="oelev" class="plot"></div></div>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script>
+const METRICS = {
+  phi: "φ order", entropy2d: "H₂D entropy", spherical_entropy: "H sphere",
+  vertical_fraction: "vertical fraction", sphericity: "sphericity", grid_angle: "grid angle °",
+  hilliness: "hilliness %", steep8: ">8% length share", walk_hilliness: "walk hilliness %",
+  steps_per_km: "staircases / km", major_stairs: "major staircases (count)", major_stairs_per_km_street: "major stairs / km street", major_stairs_per_km2: "major stairs / km² (extent-sensitive)", mean_stair_m: "mean staircase length (m)", circuity: "circuity", turn_rate: "turn rate °/100m",
+  four_way: "4-way share", mean_block_m: "mean block length (m)",
+  signals_per_km2: "traffic signals / km²", signals_per_intersection: "signals / intersection",
+  oneway_share: "one-way share", bridge_share: "bridge share", walkscore: "Walk Score®", bikescore: "Bike Score®", transitscore: "Transit Score®", population: "population (approx.)", pop_density: "pop density (per city km²)", core_area_km2: "analyzed core area (km²)",
+  land_km2: "city land area (km²)",
+  intersection_density: "intersections / km²", street_km_per_km2: "street km / km²",
+  sidewalk_share: "sidewalk share", bike_share: "bike-infra share", transit_share: "transit-lane share", alley_share: "alley share", mean_lanes: "mean lanes/road",
+};
+// region colors come from the fixed categorical slots in common.js (regionColor)
+let CITIES = [];
+
+// --- distances (heatmap + MDS) ---
+let DIST = null;   // cache the last-fetched matrix so re-ordering/resizing needn't refetch
+async function drawDistances(kind) {
+  DIST = await api(`api/distances/${kind}.json`);
+  renderDistances();
+}
+function renderDistances() {
+  const d = DIST; if (!d) return;
+  const bySlug = Object.fromEntries(CITIES.map(c => [c.slug, c]));
+  const key = document.getElementById("order").value;
+  const val = (s, i) => key === "mds" ? d.mds[i][0]
+                      : key === "name" ? (bySlug[s]?.name ?? s)
+                      : (bySlug[s]?.[key] ?? -Infinity);
+  // permutation of indices by the chosen ordering (φ / hilliness descending, MDS asc, name asc)
+  const ord = d.slugs.map((s, i) => i).sort((a, b) => {
+    const va = val(d.slugs[a], a), vb = val(d.slugs[b], b);
+    if (typeof va === "string") return va.localeCompare(vb);
+    return vb - va;
+  });
+  const P = ord;
+  const labels = P.map(i => d.labels[i]);
+  const z = P.map(i => P.map(j => d.matrix[i][j]));
+
+  const big = document.getElementById("bigheat").checked;
+  document.getElementById("heatpanel").style.gridColumn = big ? "1 / -1" : "";
+  document.getElementById("mdspanel").style.display = big ? "none" : "";
+  document.getElementById("heat").style.height = (big ? 860 : 600) + "px";
+
+  Plotly.react("heat", [{ type: "heatmap", z, x: labels, y: labels, colorscale: "Viridis",
+      hovertemplate: "%{y} ↔ %{x}: %{z:.3f}<extra></extra>" }],
+    plotlyLayout({ margin: { l: 120, r: 12, t: 10, b: 120 },
+      xaxis: { tickangle: -60, automargin: true, tickfont: { size: big ? 10 : 8 } },
+      yaxis: { automargin: true, tickfont: { size: big ? 10 : 8 } } }), PLOT_CFG);
+
+  const colors = d.slugs.map(s => regionColor(bySlug[s]?.region));
+  Plotly.react("mds", [{ type: "scatter", mode: "markers+text",
+      x: d.mds.map(p => p[0]), y: d.mds.map(p => p[1]), text: d.labels,
+      textposition: "top center", textfont: { size: 9 }, marker: { size: 9, color: colors } }],
+    plotlyLayout({ xaxis: { title: "MDS-1" }, yaxis: { title: "MDS-2" } }), PLOT_CFG);
+  document.getElementById("mds").on("plotly_click", ev => {
+    const i = ev.points?.[0]?.pointIndex;
+    i != null && (location.href = `city.html?slug=${d.slugs[i]}`);
+  });
+}
+document.getElementById("kind").onchange = e => drawDistances(e.target.value).catch(() => {});
+document.getElementById("order").onchange = renderDistances;
+document.getElementById("bigheat").onchange = renderDistances;
+
+// --- scalar scatter with axis pickers ---
+function drawScatter() {
+  const xk = document.getElementById("xaxis").value, yk = document.getElementById("yaxis").value;
+  const reg = document.getElementById("regionfilter").value;
+  const pts = reg ? CITIES.filter(c => c.region === reg) : CITIES;
+  Plotly.react("scatter", [{ type: "scatter", mode: "markers+text",
+      x: pts.map(c => c[xk]), y: pts.map(c => c[yk]), text: pts.map(c => c.name),
+      textposition: "top center", textfont: { size: 9 },
+      marker: { size: 9, color: pts.map(c => regionColor(c.region)) },
+      hovertemplate: "%{text}: %{x:.3f}, %{y:.3f}<extra></extra>" }],
+    plotlyLayout({ xaxis: { title: METRICS[xk], type: document.getElementById("logx").checked ? "log" : "linear" },
+                   yaxis: { title: METRICS[yk], type: document.getElementById("logy").checked ? "log" : "linear" } }), PLOT_CFG);
+}
+document.getElementById("logx").onchange = drawScatter;
+document.getElementById("logy").onchange = drawScatter;
+
+// --- overlays ---
+const PICKN = 3, OCOLORS = SERIES().slice(0, 3);   // fixed slots 1-3, never cycled
+async function drawOverlays() {
+  const slugs = [...document.querySelectorAll("#citypick select")].map(s => s.value).filter(Boolean);
+  const reps = await Promise.all(slugs.map(s => api(`api/city/${s}.json`)));
+  const roses = [], elevs = [];
+  reps.forEach((rep, i) => {
+    // absolute √proportion per wedge (area-proportional; weights sum to 1 per city), so
+    // concentration compares directly: a grid city's spikes genuinely dwarf a uniform disc
+    const b = rep.marginals.bearing, rv = b.weights.map(Math.sqrt);
+    // stepped OUTLINE instead of stacked bars: crisp closed contour per city — overlaid lines
+    // stay readable where translucent fills turn to mud. Bidirectional mirror included.
+    const theta = [], r = [], n = rv.length, w = 180 / n;
+    for (const half of [0, 180]) {
+      for (let k = 0; k < n; k++) {
+        const t0 = b.centers[k] - w / 2 + half, t1 = b.centers[k] + w / 2 + half;
+        theta.push(t0, t1); r.push(rv[k], rv[k]);
+      }
+    }
+    theta.push(theta[0]); r.push(r[0]);   // close the contour
+    roses.push({ type: "scatterpolar", mode: "lines", name: rep.meta.name,
+      theta, r, line: { color: OCOLORS[i], width: 2 },
+      fill: "toself", fillcolor: OCOLORS[i] + "18" });
+    const fe = rep.marginals.elevation_fine;
+    const e = fe ?? rep.marginals.elevation;
+    const centers = fe ? binCenters(fe.grade_edges_pct.concat([fe.grade_edges_pct[fe.grade_edges_pct.length-1]+5])) : binCenters(e.edges);
+    elevs.push({ type: "scatter", mode: "lines+markers", name: rep.meta.name,
+      x: centers, y: e.weights, line: { shape: "hvh", color: OCOLORS[i] } });
+  });
+  const FEATS = [["Sidewalks", "sidewalk_share"], ["Bike infra", "bike_share"],
+                 ["Transit lane", "transit_share"], ["Alleys", "alley_share"]];
+  const charTraces = reps.map((rep, i) => ({ type: "bar", name: rep.meta.name,
+    x: FEATS.map(f => f[0]), y: FEATS.map(f => 100 * (rep.scalars[f[1]] ?? 0)),
+    marker: { color: OCOLORS[i] } }));
+  Plotly.react("ochar", charTraces, plotlyLayout({ barmode: "group", showlegend: true,
+    yaxis: { title: "% of street length", ticksuffix: "%" } }), PLOT_CFG);
+
+  Plotly.react("oroses", roses, plotlyLayout({ polar: { angularaxis: { direction: "clockwise", rotation: 90 },
+      radialaxis: { showticklabels: false } }, showlegend: true }), PLOT_CFG);
+  Plotly.react("oelev", elevs, plotlyLayout({ xaxis: { title: "grade (%)" },
+      yaxis: { title: "share", type: "log" }, showlegend: true }), PLOT_CFG);
+}
+
+api("api/cities.json").then(d => {
+  CITIES = d.sort((a, b) => a.name.localeCompare(b.name));
+  // axis pickers
+  for (const [id, def] of [["xaxis", "hilliness"], ["yaxis", "entropy2d"]]) {
+    const sel = document.getElementById(id);
+    Object.entries(METRICS).forEach(([k, label]) =>
+      sel.insertAdjacentHTML("beforeend", `<option value="${k}" ${k === def ? "selected" : ""}>${label}</option>`));
+    sel.onchange = drawScatter;
+  }
+  const rf = document.getElementById("regionfilter");
+  [...new Set(CITIES.map(c => c.region))].sort().forEach(r =>
+    rf.insertAdjacentHTML("beforeend", `<option value="${r}">${r}</option>`));
+  rf.onchange = drawScatter;
+  drawScatter();
+  // overlay pickers (default: two most interesting contrasts present in data)
+  const pick = document.getElementById("citypick");
+  const prefer = ["pittsburgh", "san_francisco", "chicago"];
+  for (let i = 0; i < PICKN; i++) {
+    const sel = document.createElement("select");
+    sel.insertAdjacentHTML("beforeend", "<option value=''>—</option>");
+    CITIES.forEach(c => sel.insertAdjacentHTML("beforeend",
+      `<option value="${c.slug}" ${c.slug === prefer[i] ? "selected" : ""}>${c.name}</option>`));
+    sel.onchange = drawOverlays;
+    pick.appendChild(sel);
+  }
+  drawOverlays().catch(() => {});
+  drawDistances("sphere").catch(e =>
+    document.getElementById("heat").innerHTML = `<p class="muted">No distances yet: ${e.message}</p>`);
+});
+</script>
+</body>
+</html>

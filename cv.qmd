@@ -1,0 +1,9 @@
+---
+title: "CV"
+---
+
+<!-- Either write your CV here in markdown, or link a PDF: -->
+
+<!-- [Download CV (PDF)](papers/pdfs/cv.pdf) -->
+
+*Coming soon.*
