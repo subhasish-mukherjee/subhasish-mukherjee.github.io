@@ -6,7 +6,7 @@ about:
   links:
     - icon: github
       text: GitHub
-      href: "https://github.com/YOUR_GITHUB_USERNAME"   # ← set me
+      href: "https://github.com/subhasish-mukherjee"
     - icon: envelope
       text: Email
       href: "mailto:subhasish.m.9@gmail.com"
