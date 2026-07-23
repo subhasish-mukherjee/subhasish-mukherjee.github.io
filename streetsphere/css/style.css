@@ -10,7 +10,7 @@
 body { margin: 0; background: var(--bg); color: var(--fg);
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 header { padding: 14px 22px; border-bottom: 1px solid var(--line);
-  display: flex; align-items: baseline; gap: 20px; position: sticky; top: 0; background: var(--bg); z-index: 5; }
+  display: flex; align-items: baseline; gap: 20px; background: var(--bg); }
 header h1 { font-size: 17px; margin: 0; font-weight: 650; }
 header nav { margin-right: auto; }   /* push count/title/selects to the right edge */
 header nav a { color: var(--muted); text-decoration: none; margin-right: 16px; }
@@ -21,7 +21,7 @@ h2 { font-size: 15px; font-weight: 620; margin: 22px 0 10px; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th:first-child, td:first-child { text-align: left; }
-th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 49px; background: var(--bg); }
+th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--bg); z-index: 2; }
 th:hover { color: var(--fg); }
 th.sorted::after { content: " ▾"; color: var(--accent); }
 th.sorted.asc::after { content: " ▴"; }
