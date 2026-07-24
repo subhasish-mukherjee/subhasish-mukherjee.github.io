@@ -1,6 +1,5 @@
 ---
 title: "On a scale of anisotropic Sobolev spaces"
-description: "A three-parameter family of Fourier multipliers defines a scale of anisotropic Sobolev spaces, with applications to traveling-wave solutions in PDE."
 author: "Subhasish Mukherjee, Ian Tice"
 date: "2024-07-18"
 categories: [Analysis of PDEs, Functional Analysis]

@@ -12,8 +12,7 @@ about:
       href: "mailto:subhasish.m.9@gmail.com"
 ---
 
-I am a mathematics PhD student. My interests include <!-- e.g. metric geometry,
-optimal transport, and applications to urban structure -->.
+I am currently a mathematics PhD student working under Amie Wilkinson at the University of Chicago (Chicago, IL).
 
 This site collects my [projects](projects/index.qmd) and
 [papers & reports](papers/index.qmd).

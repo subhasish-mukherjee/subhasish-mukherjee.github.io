@@ -1,20 +1,39 @@
 ---
 title: "Papers & Reports"
 listing:
-  contents: "."
-  type: default
-  sort: "date desc"
-  fields: [title, description, date]
+  - id: publications
+    contents: "publications"
+    type: default
+    sort: "date desc"
+    fields: [title, date]
+  - id: preprints
+    contents: "preprints"
+    type: default
+    sort: "date desc"
+    fields: [title, date]
+  - id: expository
+    contents: "expository"
+    type: default
+    sort: "date desc"
+    fields: [title, date]
 ---
 
-<!-- Add one .qmd stub per paper/report in this directory, e.g.:
+## Publications
 
----
-title: "A note on such-and-such"
-description: "Short abstract or one-line summary."
-date: 2026-05-01
----
+::: {#publications}
+:::
 
-[PDF](pdfs/my-paper.pdf)
+## Preprints
 
-and put the PDF itself in papers/pdfs/. -->
+::: {#preprints}
+:::
+
+## Expository Work
+
+::: {#expository}
+:::
+
+<!-- To add an item: drop a .qmd into papers/publications/, papers/preprints/, or
+     papers/expository/. It auto-appears in that section (sorted newest first).
+     Front matter needs title + date; add a citation/abstract/links in the body.
+     Self-hosted PDFs go in papers/pdfs/ and link as [PDF](../pdfs/yourfile.pdf). -->
