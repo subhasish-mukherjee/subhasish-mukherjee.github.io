@@ -5,17 +5,17 @@ listing:
     contents: "publications"
     type: default
     sort: "date desc"
-    fields: [title, date]
+    fields: [title, subtitle, date]
   - id: preprints
     contents: "preprints"
     type: default
     sort: "date desc"
-    fields: [title, date]
+    fields: [title, subtitle, date]
   - id: expository
     contents: "expository"
     type: default
     sort: "date desc"
-    fields: [title, date]
+    fields: [title, subtitle, date]
 ---
 
 ## Publications
@@ -35,5 +35,7 @@ listing:
 
 <!-- To add an item: drop a .qmd into papers/publications/, papers/preprints/, or
      papers/expository/. It auto-appears in that section (sorted newest first).
-     Front matter needs title + date; add a citation/abstract/links in the body.
-     Self-hosted PDFs go in papers/pdfs/ and link as [PDF](../pdfs/yourfile.pdf). -->
+     Front matter: title, date, and subtitle (the coauthor + venue line, e.g.
+     "with Ian Tice · Communications on Pure and Applied Analysis"). Put the
+     citation/abstract/links in the body. Self-hosted PDFs go in papers/pdfs/
+     and link as [PDF](../pdfs/yourfile.pdf). -->

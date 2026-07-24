@@ -1,6 +1,6 @@
 ---
 title: "On a scale of anisotropic Sobolev spaces"
-author: "Subhasish Mukherjee, Ian Tice"
+subtitle: "with Ian Tice · Communications on Pure and Applied Analysis"
 date: "2024-07-18"
 categories: [Analysis of PDEs, Functional Analysis]
 ---
