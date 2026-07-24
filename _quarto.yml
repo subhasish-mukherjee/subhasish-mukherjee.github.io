@@ -5,14 +5,14 @@ project:
     - "*.qmd"
     - "projects/"
     - "papers/"
-    - "!streetsphere/"        # static export — passthrough only, never rendered by Quarto
+    - "!city-streets/"        # static export — passthrough only, never rendered by Quarto
   resources:
-    - "streetsphere/"         # copied verbatim into _site/streetsphere/
+    - "city-streets/"         # copied verbatim into _site/city-streets/
     - "papers/pdfs/"
 
 website:
   title: "Subhasish Mukherjee"
-  # site-url: "https://YOURDOMAIN"   # uncomment + set once the domain is purchased
+  site-url: "https://subhasishmukherjee.com"   # uncomment + set once the domain is purchased
   navbar:
     left:
       - href: index.qmd
@@ -25,7 +25,7 @@ website:
         text: CV
     right:
       - icon: github
-        href: "https://github.com/YOUR_GITHUB_USERNAME"   # ← set me
+        href: "https://github.com/subhasish-mukherjee"   # ← set me
   page-footer:
     center: "© 2026 Subhasish Mukherjee"
 

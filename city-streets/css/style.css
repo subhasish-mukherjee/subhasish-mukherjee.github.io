@@ -12,6 +12,8 @@ body { margin: 0; background: var(--bg); color: var(--fg);
 header { padding: 14px 22px; border-bottom: 1px solid var(--line);
   display: flex; align-items: baseline; gap: 20px; background: var(--bg); }
 header h1 { font-size: 17px; margin: 0; font-weight: 650; }
+header .home-link { color: var(--muted); text-decoration: none; font-size: 13px; white-space: nowrap; }
+header .home-link:hover { color: var(--accent); }
 header nav { margin-right: auto; }   /* push count/title/selects to the right edge */
 header nav a { color: var(--muted); text-decoration: none; margin-right: 16px; }
 header nav a:hover, header nav a.active { color: var(--accent); }

@@ -20,7 +20,7 @@ This site collects my [projects](projects/index.qmd) and
 
 ## Recently
 
-- **[StreetSphere](/streetsphere/)** — street-network orientation as probability
+- **[City Streets](/city-streets/)** — street-network orientation as probability
   measures on $\mathbb{RP}^2$: Wasserstein distances between cities, hilliness,
   walkability, and staircase censuses across 84 world cities, with an interactive
   dashboard.
