@@ -12,14 +12,10 @@ about:
       href: "mailto:subhasish.m.9@gmail.com"
 ---
 
-I am currently a mathematics PhD student working under Amie Wilkinson at the University of Chicago (Chicago, IL).
+I am currently a mathematics PhD student working under Amie Wilkinson at the University of Chicago ([Chicago, IL](/city-streets/city.html?slug=chicago)). Previously, I obtained my BS/MS degree in mathematics at Carnegie Mellon University ([Pittsburgh, PA](/city-streets/city.html?slug=pittsburgh)). Broadly, I am interested in most things related to dynamical systems or analysis. Currently, I am working in smooth ergodic theory, particularly the dimension theory of random diffeomorphisms. In the past, I have also thought about harmonic analysis, descriptive set theory, and function spaces in PDE.
 
-This site collects my [projects](projects/index.qmd) and
-[papers & reports](papers/index.qmd).
+This site collects my [papers & reports](papers/index.qmd) and some [projects](projects/index.qmd) for fun.
 
 ## Recently
 
-- **[City Streets](/city-streets/)** — street-network orientation as probability
-  measures on $\mathbb{RP}^2$: Wasserstein distances between cities, hilliness,
-  walkability, and staircase censuses across 84 world cities, with an interactive
-  dashboard.
+- **[City Streets](/city-streets/)** — an interactive atlas that treats each city's streets as a probability measure on $\mathbb{RP}^2$, comparing 84 world cities by orientation, hilliness, and walkability.
