@@ -2,7 +2,8 @@
 title: "Subhasish Mukherjee"
 about:
   template: trestles
-  # image: profile.jpg          # drop a photo in the repo root and uncomment
+  image: profile.jpg
+  image-shape: rounded
   links:
     - icon: github
       text: GitHub
