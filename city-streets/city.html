@@ -40,7 +40,8 @@
     <div class="panel"><b>Street character</b>
       <div class="muted">full breakdown, colored per attribute: lane counts, sidewalk & cycleway
         provision (among tagged roads), and transit-lane / alley share (of all length).</div>
-      <div id="attrs" class="plot" style="height:300px"></div></div>
+      <div id="attrs" class="plot" style="height:300px"></div>
+      <div id="parkingline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
     <div class="panel"><b>Most similar cities</b>
       <div class="muted">nearest by each Wasserstein distance (<a href="about.html#distances">?</a>).</div>
       <div id="neighbors" style="padding-top:8px"></div></div>
@@ -231,6 +232,21 @@ function drawAttrs(rep) {
       margin: { l: 108, r: 10, t: 22, b: 34 }, bargap: 0.25,
       title: { text: s.mean_lanes != null ? `mean ${s.mean_lanes.toFixed(1)} lanes/road` : "", font: { size: 11 }, x: 0.02, xanchor: "left" },
       xaxis: { title: "% of length", ticksuffix: "%" }, yaxis: { automargin: true } }), PLOT_CFG);
+
+  // On-street parking (estimated): a gated, covered-only measure — shown with its mapping
+  // coverage so a low-coverage city (e.g. Chicago) is never mistaken for a full-network figure.
+  const pl = document.getElementById("parkingline");
+  if (s.parking_asphalt_share != null) {
+    pl.innerHTML = `<b>On-street parking (est.):</b> ${pct(s.parking_asphalt_share, 0)} of the ` +
+      `roadway asphalt` +
+      (s.parking_both_share != null ? ` — both-side ${pct(s.parking_both_share, 0)}, ` +
+        `one-side ${pct(s.parking_one_share, 0)}` : "") +
+      ` · <span title="OSM parking coverage is uneven; this estimate rests only on the mapped streets">` +
+      `mapped on ${pct(s.parking_coverage, 0)} of streets</span>`;
+  } else {
+    pl.innerHTML = `<b>On-street parking:</b> too little is mapped in OSM here to estimate` +
+      (s.parking_coverage != null ? ` (only ${pct(s.parking_coverage, 1)} of streets tagged)` : "") + ".";
+  }
 }
 // nearest cities by each distance kind, computed client-side from the matrices
 async function drawNeighbors() {

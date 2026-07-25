@@ -175,6 +175,25 @@
     courtesy of <a href="https://www.walkscore.com">Walk Score</a>.</p>
   </section>
 
+  <section id="parking">
+    <h2>On-street parking (estimated)</h2>
+    <p>Of the paved roadway on streets where parking <em>is mapped</em>, the estimated fraction
+    taken up by <b>parking lanes</b> rather than travel lanes — "how much of the asphalt is
+    parking." OSM almost never records physical width, so widths are standard estimates: a
+    parking side ≈ 2.0 m parallel / 4.3 m diagonal / 5.0 m perpendicular, a travel lane ≈ 3.0 m
+    (lane count from the <code>lanes</code> tag, else 2). Both the <code>parking:&lt;side&gt;</code>
+    and older <code>parking:lane:&lt;side&gt;</code> schemes are read; <b>both-side</b> /
+    <b>one-side</b> shares are the mapped-street length parked on two / one sides.</p>
+    <p><b>The big caveat — this is covered-only and gated.</b> OSM parking mapping is wildly
+    uneven: some cities tag most streets, entire regions (much of South America, Asia, Africa)
+    tag almost none. So the figure is computed <em>only</em> over mapped streets, and shown only
+    where at least 30 km of street is tagged — enough of an absolute sample to mean something,
+    even in a big city that maps a small percentage (Chicago maps under 1%, but that is still
+    ~60 km). Everywhere the <b>mapping coverage</b> is shown alongside: a value resting on 25%
+    of a city's streets is far more trustworthy than one resting on 1%. Cities below the floor
+    are left blank rather than guessed.</p>
+  </section>
+
   <section id="traffic">
     <h2>Traffic proxy (betweenness)</h2>
     <p>Real traffic volumes are proprietary or US-only; we use sampled <em>betweenness
