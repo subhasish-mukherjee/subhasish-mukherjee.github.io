@@ -1,0 +1,85 @@
+---
+title: "Other Interests & Projects"
+---
+
+Outside of math I like making things — with code, with leather, on my feet, and
+in the kitchen. A few of those below.
+
+::: {.section-block}
+## Coding
+
+I build small tools and data projects for fun, usually when a question I'm
+curious about turns out to need some computing to answer.
+
+**[City Streets](/city-streets/)** is the big one. It treats every city's street
+network as a probability measure on $\mathbb{RP}^2$ — compass bearing crossed
+with grade — and extends Boeing's orientation-entropy idea into 3D. It computes
+rotation-aligned Wasserstein and Jensen–Shannon distances between **84 world
+cities**, along with comparable measures of hilliness, walkability, on-street
+parking, and staircase-street censuses. It's a Julia package with an interactive
+dashboard.
+
+[Open the interactive dashboard →](/city-streets/) ·
+[Read more about the project →](projects/city-streets.qmd)
+:::
+
+::: {.section-block}
+## Leatherwork
+
+I make things out of vegetable-tanned leather — wallets, belts, small goods —
+cutting, stitching, and finishing everything by hand. It's the same appeal as a
+clean proof: a small number of simple operations, done carefully, composing into
+something that holds together.
+
+<div class="gallery">
+  <!-- To add a photo: drop the image in images/leatherwork/ and replace one
+       placeholder below with, e.g.:
+       <figure><img src="images/leatherwork/wallet.jpg" alt="Hand-stitched wallet">
+       <figcaption>Hand-stitched bifold</figcaption></figure> -->
+  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
+</div>
+:::
+
+::: {.section-block}
+## Boots
+
+I'm into heritage boots and the long, slow way they age — how a pair takes on the
+shape and marks of the person wearing them. That patina is the whole point, and
+I've spent a fair bit of time coaxing it along.
+
+<div class="award">
+  <span class="trophy">🏆</span>
+  <span class="award-text"><strong>Grand Prize — Patina Thunderdome 2025–2026, Pre-Worn division.</strong>
+  A patina competition judging how a pair of boots has been broken in and worn over time.</span>
+</div>
+
+<div class="gallery">
+  <!-- To add a photo: drop the image in images/boots/ and replace one
+       placeholder below with, e.g.:
+       <figure><img src="images/boots/patina.jpg" alt="Patina on a pair of boots">
+       <figcaption>Thunderdome pair</figcaption></figure> -->
+  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
+</div>
+:::
+
+::: {.section-block}
+## Food
+
+I bake and cook a good amount — mostly bread. There's a nice rhythm to it, and
+like everything else on this page it rewards patience and a little attention to
+what the material is actually doing.
+
+<div class="gallery">
+  <!-- To add a photo: drop the image in images/food/ and replace one
+       placeholder below with, e.g.:
+       <figure><img src="images/food/sourdough.jpg" alt="Sourdough loaf">
+       <figcaption>Sourdough</figcaption></figure> -->
+  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
+  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
+</div>
+:::

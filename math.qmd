@@ -1,0 +1,59 @@
+---
+title: "Math"
+listing:
+  - id: publications
+    contents: "papers/publications"
+    type: default
+    sort: "date desc"
+    fields: [title, subtitle, date]
+  - id: preprints
+    contents: "papers/preprints"
+    type: default
+    sort: "date desc"
+    fields: [title, subtitle, date]
+  - id: expository
+    contents: "papers/expository"
+    type: default
+    sort: "date desc"
+    fields: [title, subtitle, date]
+---
+
+I am a mathematics PhD student working with
+[Amie Wilkinson](https://www.math.uchicago.edu/~wilkinso/) at the University of
+Chicago, and I am broadly interested in **dynamical systems** and **analysis**.
+
+My current work is in **smooth ergodic theory** — in particular the dimension
+theory of random diffeomorphisms, where I study how the fractal geometry of
+invariant and stationary measures is governed by Lyapunov exponents and entropy.
+I am drawn to questions where a dynamical system forces rigidity on the measures
+it preserves, and to the interplay between hyperbolicity, dimension, and
+randomness.
+
+Earlier I worked in **harmonic analysis**, **descriptive set theory**, and the
+**function-space theory behind PDE** — including a scale of anisotropic Sobolev
+spaces built for traveling-wave problems. That analytic background still shapes
+how I think about the ergodic-theoretic problems I work on now.
+
+Below are my papers and reports.
+
+## Publications
+
+::: {#publications}
+:::
+
+## Preprints
+
+::: {#preprints}
+:::
+
+## Expository Work
+
+::: {#expository}
+:::
+
+<!-- To add an item: drop a .qmd into papers/publications/, papers/preprints/, or
+     papers/expository/. It auto-appears in that section (sorted newest first).
+     Front matter: title, date, and subtitle (the coauthor + venue line, e.g.
+     "with Ian Tice · Communications on Pure and Applied Analysis"). Put the
+     citation/abstract/links in the body. Self-hosted PDFs go in papers/pdfs/
+     and link as [PDF](papers/pdfs/yourfile.pdf). -->

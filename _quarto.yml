@@ -9,6 +9,7 @@ project:
   resources:
     - "city-streets/"         # copied verbatim into _site/city-streets/
     - "papers/pdfs/"
+    - "images/"               # leatherwork / boots / food photos
 
 website:
   title: "Subhasish Mukherjee"
@@ -17,10 +18,10 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: projects/index.qmd
-        text: Projects
-      - href: papers/index.qmd
-        text: Papers & Reports
+      - href: math.qmd
+        text: Math
+      - href: interests.qmd
+        text: Other Interests & Projects
       - href: cv.qmd
         text: CV
     right:

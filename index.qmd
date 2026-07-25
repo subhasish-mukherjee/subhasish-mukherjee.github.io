@@ -15,7 +15,7 @@ about:
 
 I am currently a mathematics PhD student working under [Amie Wilkinson](https://www.math.uchicago.edu/~wilkinso/) at the University of Chicago ([Chicago, IL](/city-streets/city.html?slug=chicago)). Previously, I obtained my BS/MS degree in mathematics at Carnegie Mellon University ([Pittsburgh, PA](/city-streets/city.html?slug=pittsburgh)). Broadly, I am interested in most things related to dynamical systems or analysis. Currently, I am working in smooth ergodic theory, particularly the dimension theory of random diffeomorphisms. In the past, I have also thought about harmonic analysis, descriptive set theory, and function spaces in PDE.
 
-This site collects my [papers & reports](papers/index.qmd) and some [projects](projects/index.qmd) for fun.
+This site collects my [math](math.qmd) — papers, preprints, and expository work — along with some [other interests & projects](interests.qmd) for fun.
 
 ## Recently
 

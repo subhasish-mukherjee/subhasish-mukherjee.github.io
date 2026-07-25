@@ -8,3 +8,91 @@ h1, h2, h3 {
 .navbar-title {
   font-weight: 650;
 }
+
+/* ---- Interests & Projects sections ---------------------------------- */
+
+/* A little more breathing room between the big sections on a long page. */
+.section-block {
+  margin: 2.75rem 0 3.25rem;
+}
+.section-block > h2 {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+.section-block .lead {
+  color: #495057;
+  max-width: 46rem;
+}
+
+/* ---- Photo galleries ------------------------------------------------ */
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0.5rem;
+}
+.gallery figure {
+  margin: 0;
+}
+.gallery img,
+.gallery .ph {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  display: block;
+}
+.gallery figcaption {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 0.4rem;
+  text-align: center;
+}
+
+/* Placeholder tile shown until a real photo is dropped in. */
+.gallery .ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: repeating-linear-gradient(
+      45deg, #f6f7f9, #f6f7f9 12px, #f1f3f5 12px, #f1f3f5 24px);
+  border: 1px dashed #ced4da;
+  box-shadow: none;
+  color: #adb5bd;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+.gallery .ph .ph-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* ---- Award / highlight callout -------------------------------------- */
+
+.award {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: linear-gradient(90deg, #fff8e6, #fffdf7);
+  border: 1px solid #f2d98a;
+  border-left: 4px solid #e0a800;
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  margin: 1rem 0 1.25rem;
+}
+.award .trophy {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.award .award-text {
+  font-size: 0.97rem;
+}
+.award .award-text strong {
+  color: #7a5b00;
+}
