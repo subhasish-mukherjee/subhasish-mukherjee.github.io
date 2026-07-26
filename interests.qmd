@@ -2,8 +2,8 @@
 title: "Other Interests & Projects"
 ---
 
-Outside of math I like making things — with code, with leather, on my feet, and
-in the kitchen. A few of those below.
+Outside of math I like making things — with code, with leather, and on my feet.
+A few of those below.
 
 ::: {.section-block}
 ## Coding
@@ -63,23 +63,5 @@ I've spent a fair bit of time coaxing it along.
   <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
   <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
   <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
-</div>
-:::
-
-::: {.section-block}
-## Food
-
-I bake and cook a good amount — mostly bread. There's a nice rhythm to it, and
-like everything else on this page it rewards patience and a little attention to
-what the material is actually doing.
-
-<div class="gallery">
-  <!-- To add a photo: drop the image in images/food/ and replace one
-       placeholder below with, e.g.:
-       <figure><img src="images/food/sourdough.jpg" alt="Sourdough loaf">
-       <figcaption>Sourdough</figcaption></figure> -->
-  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🍞</span>photo coming soon</div></figure>
 </div>
 :::
