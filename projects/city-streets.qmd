@@ -1,23 +1,32 @@
 ---
 title: "City Streets"
-description: "Street networks as probability measures on ℝP² — orientation entropy in 3D, Wasserstein distances between 84 world cities, hilliness, walkability, and staircase censuses."
+description: "Street networks as probability measures on ℝP², with orientation entropy in 3D, Wasserstein distances between 84 cities, hilliness, walkability, and staircase censuses."
 date: 2026-07-23
 ---
 
-Every city's streets define a probability measure over *directions in 3D* —
-compass bearing crossed with grade. City Streets extends Boeing's street-network
-orientation entropy to the projective plane $\mathbb{RP}^2$, computes
-rotation-aligned Wasserstein and Jensen–Shannon distances between city measures,
-and derives comparable metrics for hilliness, walkability, staircase-street
-censuses, and street "character" across **84 world cities**.
+The question behind this project is how much one can learn about a city just by
+looking at its streets. The starting point is
+[Geoff Boeing](https://geoffboeing.com/)'s work on
+[urban street network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/),
+which measures how close a city is to a grid by the entropy of its street
+bearings.
 
-**[Open the interactive dashboard →](/city-streets/)**
+City Streets extends this to three dimensions. Crossing compass bearing with
+grade, each city's street network defines a probability measure on
+$\mathbb{RP}^2$. From these measures I compute Wasserstein and Jensen–Shannon
+distances between cities, taken modulo rotation about the vertical axis, so that
+two cities laid out alike but oriented differently are recognized as similar.
+The same data gives comparable measures of hilliness, walkability, on-street
+parking, and staircase streets across 84 cities.
 
-Highlights:
+**[Open the interactive dashboard](/city-streets/)**
 
-- A sortable master table of ~30 comparable metrics per city
-- Per-city pages: the direction measure on the sphere, bearing roses, hill fans,
-  street-character breakdowns, and a region map of the analyzed urban core
-- A distance heatmap + MDS embedding: which cities are built alike, up to rotation
-- Staircase censuses done honestly — union-find connected components, a ≥30 m
-  "major staircase" rule applied identically on every continent
+The dashboard includes:
+
+- A sortable table of about 30 comparable measures per city
+- Per-city pages with the direction measure on the sphere, bearing roses, hill
+  fans, street-character breakdowns, and a map of the analyzed urban core
+- A distance heatmap and MDS embedding, showing which cities are built alike up
+  to rotation
+- A staircase census computed by union-find connected components, with a 30 m
+  minimum length rule applied identically on every continent

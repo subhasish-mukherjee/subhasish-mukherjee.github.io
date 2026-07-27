@@ -2,8 +2,7 @@
 title: "Other Interests & Projects"
 ---
 
-Outside of math I like making things — with code, with leather, and on my feet.
-A few of those below.
+A few things I do outside of math.
 
 ::: {.section-block}
 ## City Streets
@@ -12,26 +11,27 @@ I am interested in how much one can learn about a city just by looking at its
 streets. The starting point is
 [Geoff Boeing](https://geoffboeing.com/)'s work on
 [urban street network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/),
-which measures a city's grid order by the entropy of its street bearings.
+which measures how close a city is to a grid by the entropy of its street
+bearings.
 
-City Streets extends that idea to three dimensions: each city's street network
-becomes a probability measure on $\mathbb{RP}^2$, crossing compass bearing with
-grade. From those measures it computes rotation-aligned Wasserstein and
-Jensen–Shannon distances between 84 world cities, along with comparable measures
-of hilliness, walkability, on-street parking, and staircase streets. Built as a
-Julia package with an interactive dashboard.
+City Streets extends this to three dimensions. Crossing compass bearing with
+grade, each city's street network defines a probability measure on
+$\mathbb{RP}^2$. From these measures I compute rotation-aligned Wasserstein and
+Jensen–Shannon distances between 84 cities, along with measures of hilliness,
+walkability, on-street parking, and staircase streets. The project is a Julia
+package with an interactive dashboard.
 
-[Open the dashboard →](/city-streets/) ·
-[More about the project →](projects/city-streets.qmd)
+[Open the dashboard](/city-streets/) ·
+[More about the project](projects/city-streets.qmd)
 :::
 
 ::: {.section-block}
 ## Leatherwork
 
-I hand-make small goods out of vegetable-tanned leather — wallets, belts, and
-the like — cutting, saddle-stitching, and finishing each piece by hand. It is
-also part of why I like being in Chicago, home of the
-[Horween Leather Company](https://www.horween.com/).
+I make small goods out of vegetable-tanned leather, mostly wallets and belts,
+cutting and saddle-stitching each piece by hand. One of the things I like about
+being in Chicago is that the
+[Horween Leather Company](https://www.horween.com/) is here.
 
 <div class="gallery">
   <!-- To add a photo: drop the image in images/leatherwork/ and replace one
@@ -47,13 +47,13 @@ also part of why I like being in Chicago, home of the
 ::: {.section-block}
 ## Boots
 
-I wear and care for heritage boots, and I am interested in patina — how a pair
-takes on the shape and markings of the person wearing it over years of wear.
+I wear and care for heritage boots. What interests me is patina, meaning the way
+a pair takes on the shape and markings of the person wearing it over time.
 
 <div class="award">
   <span class="trophy">🏆</span>
-  <span class="award-text"><strong>Grand Prize — Patina Thunderdome 2025–2026, Pre-Worn division.</strong>
-  A patina competition judging how a pair of boots has been broken in and worn over time.</span>
+  <span class="award-text"><strong>Grand Prize, Patina Thunderdome 2025–2026, Pre-Worn division.</strong>
+  A competition judging how a pair of boots has been broken in over time.</span>
 </div>
 
 <div class="gallery">

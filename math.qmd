@@ -20,21 +20,15 @@ listing:
 
 I am a mathematics PhD student working with
 [Amie Wilkinson](https://www.math.uchicago.edu/~wilkinso/) at the University of
-Chicago, and I am broadly interested in **dynamical systems** and **analysis**.
+Chicago. My interests are in dynamical systems and analysis.
 
-My current work is in **smooth ergodic theory** — in particular the dimension
-theory of random diffeomorphisms, where I study how the fractal geometry of
-invariant and stationary measures is governed by Lyapunov exponents and entropy.
-I am drawn to questions where a dynamical system forces rigidity on the measures
-it preserves, and to the interplay between hyperbolicity, dimension, and
-randomness.
+I currently work in smooth ergodic theory, on the dimension theory of random
+diffeomorphisms. The basic question there is how the dimension of invariant and
+stationary measures is determined by Lyapunov exponents and entropy.
 
-Earlier I worked in **harmonic analysis**, **descriptive set theory**, and the
-**function-space theory behind PDE** — including a scale of anisotropic Sobolev
-spaces built for traveling-wave problems. That analytic background still shapes
-how I think about the ergodic-theoretic problems I work on now.
-
-Below are my papers and reports.
+I have also worked on harmonic analysis, descriptive set theory, and function
+spaces arising in PDE, including a scale of anisotropic Sobolev spaces adapted
+to traveling wave problems.
 
 ## Publications
 
