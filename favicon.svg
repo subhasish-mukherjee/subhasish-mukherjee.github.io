@@ -1,6 +1,29 @@
+<!-- Site favicon: an apple with a piece removed, and the piece floating above,
+     waiting to be inserted. (The completion of a metric space.)
+     Simplified to solid silhouettes so it stays legible at 16px.
+     Regenerate the PNG with:
+       rsvg-convert -w 180 -h 180 favicon.svg -o favicon.png -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#1f3b57"/>
-  <text x="32" y="43.5" fill="#ffffff"
-        font-family="Helvetica, Arial, sans-serif" font-size="31" font-weight="600"
-        text-anchor="middle" letter-spacing="-0.5">SM</text>
+  <defs>
+    <!-- The missing piece: a blob built from overlapping circles. Drawn twice,
+         once in the background color to punch the notch out of the apple, and
+         once in apple red as the detached piece above. -->
+    <g id="piece">
+      <circle cx="6"    cy="6"   r="5.5"/>
+      <circle cx="12"   cy="4.5" r="4.5"/>
+      <circle cx="17"   cy="6.5" r="5"/>
+      <circle cx="9"    cy="8.5" r="4.5"/>
+      <circle cx="14.5" cy="8.5" r="4.5"/>
+    </g>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="#faf6ef"/>
+
+  <!-- apple body and stem -->
+  <ellipse cx="32" cy="41.5" rx="18.5" ry="17" fill="#c53a2e"/>
+  <path d="M32,57.5 L30.5,62" stroke="#6b4a2f" stroke-width="3.2" stroke-linecap="round"/>
+
+  <!-- the notch, then the piece that fills it -->
+  <use href="#piece" transform="translate(23.2,22.1) scale(0.8)" fill="#faf6ef"/>
+  <use href="#piece" transform="translate(23.2,6.5) scale(0.8)" fill="#c53a2e"/>
 </svg>
