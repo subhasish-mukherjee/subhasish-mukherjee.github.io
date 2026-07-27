@@ -6,30 +6,32 @@ Outside of math I like making things — with code, with leather, and on my feet
 A few of those below.
 
 ::: {.section-block}
-## Coding
+## City Streets
 
-I build small tools and data projects for fun, usually when a question I'm
-curious about turns out to need some computing to answer.
+I am interested in how much one can learn about a city just by looking at its
+streets. The starting point is
+[Geoff Boeing](https://geoffboeing.com/)'s work on
+[urban street network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/),
+which measures a city's grid order by the entropy of its street bearings.
 
-**[City Streets](/city-streets/)** is the big one. It treats every city's street
-network as a probability measure on $\mathbb{RP}^2$ — compass bearing crossed
-with grade — and extends Boeing's orientation-entropy idea into 3D. It computes
-rotation-aligned Wasserstein and Jensen–Shannon distances between **84 world
-cities**, along with comparable measures of hilliness, walkability, on-street
-parking, and staircase-street censuses. It's a Julia package with an interactive
-dashboard.
+City Streets extends that idea to three dimensions: each city's street network
+becomes a probability measure on $\mathbb{RP}^2$, crossing compass bearing with
+grade. From those measures it computes rotation-aligned Wasserstein and
+Jensen–Shannon distances between 84 world cities, along with comparable measures
+of hilliness, walkability, on-street parking, and staircase streets. Built as a
+Julia package with an interactive dashboard.
 
-[Open the interactive dashboard →](/city-streets/) ·
-[Read more about the project →](projects/city-streets.qmd)
+[Open the dashboard →](/city-streets/) ·
+[More about the project →](projects/city-streets.qmd)
 :::
 
 ::: {.section-block}
 ## Leatherwork
 
-I make things out of vegetable-tanned leather — wallets, belts, small goods —
-cutting, stitching, and finishing everything by hand. It's the same appeal as a
-clean proof: a small number of simple operations, done carefully, composing into
-something that holds together.
+I hand-make small goods out of vegetable-tanned leather — wallets, belts, and
+the like — cutting, saddle-stitching, and finishing each piece by hand. It is
+also part of why I like being in Chicago, home of the
+[Horween Leather Company](https://www.horween.com/).
 
 <div class="gallery">
   <!-- To add a photo: drop the image in images/leatherwork/ and replace one
@@ -45,9 +47,8 @@ something that holds together.
 ::: {.section-block}
 ## Boots
 
-I'm into heritage boots and the long, slow way they age — how a pair takes on the
-shape and marks of the person wearing them. That patina is the whole point, and
-I've spent a fair bit of time coaxing it along.
+I wear and care for heritage boots, and I am interested in patina — how a pair
+takes on the shape and markings of the person wearing it over years of wear.
 
 <div class="award">
   <span class="trophy">🏆</span>

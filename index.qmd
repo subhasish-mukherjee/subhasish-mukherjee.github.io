@@ -4,13 +4,6 @@ about:
   template: trestles
   image: profile.jpg
   image-shape: rounded
-  links:
-    - icon: github
-      text: GitHub
-      href: "https://github.com/subhasish-mukherjee"
-    - icon: envelope
-      text: Email
-      href: "mailto:subhasish.m.9@gmail.com"
 ---
 
 I am currently a mathematics PhD student working under [Amie Wilkinson](https://www.math.uchicago.edu/~wilkinso/) at the University of Chicago ([Chicago, IL](/city-streets/city.html?slug=chicago)). Previously, I obtained my BS/MS degree in mathematics at Carnegie Mellon University ([Pittsburgh, PA](/city-streets/city.html?slug=pittsburgh)). Broadly, I am interested in most things related to dynamical systems or analysis. Currently, I am working in smooth ergodic theory, particularly the dimension theory of random diffeomorphisms. In the past, I have also thought about harmonic analysis, descriptive set theory, and function spaces in PDE.
