@@ -194,6 +194,32 @@
     are left blank rather than guessed.</p>
   </section>
 
+  <section id="parks">
+    <h2>Parkland</h2>
+    <p>How much of the analyzed land is park: the <b>total area</b> of public parkland and its
+    <b>share</b> of the urban core. Park polygons come from OSM — <code>leisure=park</code>,
+    <code>nature_reserve</code>, <code>common</code>, <code>dog_park</code>,
+    <code>garden</code>, and <code>landuse=recreation_ground</code> / <code>village_green</code>.</p>
+    <p><b>It is measured as a raster union, not a sum of polygon areas.</b> Parks overlap
+    constantly in OSM — a pitch inside a park inside a nature reserve, the same green mapped
+    both as a way and as a relation member — so adding areas up double-counts badly. Instead the
+    ground is rasterized at 20 m and every cell is counted once, however many polygons cover it.
+    Multipolygon holes (a lake or stadium carved out of a park) are subtracted per feature
+    before the union, so a hole in one park can still be filled by the park next to it. The
+    raster is a subdivision of the same grid the <a href="#window">urban core</a> area is measured
+    on, so the share is a ratio of two commensurable numbers.</p>
+    <p><b>Definition matters more than measurement here</b>, so the alternative is shown too.
+    The headline number counts land a resident would call a park. A second figure, <b>all green
+    space</b>, additionally counts sports pitches, playgrounds, golf courses, forest, meadow and
+    amenity grass — green, but not necessarily public parkland (much <code>landuse=grass</code>
+    is a highway verge). Where the two diverge, the definition is doing the work, and you can
+    see it rather than having to trust it. Both are clipped to the analyzed core, so a large
+    park straddling the edge contributes only the part inside.</p>
+    <p>The usual OSM caveat applies, though far more gently than for parking: parks are among
+    the better-mapped features in OSM worldwide, being large, obvious, and long-lived. Small
+    pocket parks and unmapped informal green space will be missed.</p>
+  </section>
+
   <section id="traffic">
     <h2>Traffic proxy (betweenness)</h2>
     <p>Real traffic volumes are proprietary or US-only; we use sampled <em>betweenness

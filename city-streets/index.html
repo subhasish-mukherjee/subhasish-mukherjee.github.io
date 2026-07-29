@@ -52,6 +52,8 @@ const COLS = [
   { k: "pop_density", t: "pop/km²", tip: "approx. city-proper population ÷ city-proper land area (registry data — consistent units)", d: 0, s: r => r.pop_density },
   { k: "signals_per_km2", t: "signals/km²", tip: "traffic signals per km² of urban core (OSM highway=traffic_signals)", d: 1, s: r => r.signals_per_km2 },
   { k: "four_way", t: "4-way %", tip: "share of intersections with 4 streets — the hallmark of grids", d: null, s: r => r.four_way, cell: r => pct(r.four_way, 1) },
+  { k: "park_share", t: "park %", tip: "public parkland as a share of the analyzed core, measured as a raster union of OSM park polygons (no double-counting of overlapping parks)", d: null, s: r => r.park_share, cell: r => pct(r.park_share, 1) },
+  { k: "park_km2", t: "park km²", tip: "total public parkland inside the analyzed core", d: 1, s: r => r.park_km2 },
 ];
 let rows = [], renderTable = null;
 

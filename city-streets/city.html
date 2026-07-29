@@ -52,7 +52,8 @@
       <div class="muted">shaded cells = the density-derived urban core actually analyzed
         (for boundary-extent cities this is the city limits minus low-density areas);
         ring = fetch disc (disc-extent cities only); small circles = neighborhoods.</div>
-      <div id="region" class="plot" style="height:440px"></div></div>
+      <div id="region" class="plot" style="height:440px"></div>
+      <div id="parksline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
   </div>
   <div id="nbsection" style="display:none">
     <h2>Neighborhoods</h2>
@@ -351,6 +352,24 @@ function drawRegionMap(rep) {
     layout.map.style = "white-bg";
     Plotly.newPlot("region", [trace], layout, PLOT_CFG);
   }
+  drawParks(rep);
+}
+
+// Parkland, measured over exactly the shaded region above — park polygons and the area they
+// are divided by are rasterized on the same grid, so the share is a ratio of like for like.
+function drawParks(rep) {
+  const el = document.getElementById("parksline");
+  const s = rep.scalars, area = Number(rep.meta.area_km2);
+  if (!el) return;
+  if (s.park_share == null) { el.style.display = "none"; return; }
+  el.style.display = "";
+  el.innerHTML = `<b>Parkland:</b> ${s.park_km2.toFixed(1)} km² — ` +
+    `${pct(s.park_share, 1)}% of the ${area.toFixed(0)} km² analyzed` +
+    (s.green_share != null ?
+      ` · <span title="Adds sports pitches, playgrounds, golf, forest, meadow and amenity grass — ` +
+      `land that is green but not necessarily a public park">counting all green space: ` +
+      `${s.green_km2.toFixed(1)} km² (${pct(s.green_share, 1)}%)</span>` : "") +
+    ` <a href="about.html#parks">?</a>`;
 }
 
 api(`api/city/${slug}.json`).then(rep => {
