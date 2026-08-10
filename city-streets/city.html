@@ -298,7 +298,8 @@ async function drawNeighborhoodCards() {
       { k: "walk_hilliness", t: "walk hilly %", d: 1, s: n => n.walk_hilliness },
       { k: "sidewalk_share", t: "sidewalk", s: n => n.sidewalk_share, cell: n => pct(n.sidewalk_share, 0) },
       { k: "bike_share", t: "bike", s: n => n.bike_share, cell: n => pct(n.bike_share, 0) },
-      { k: "walkscore", t: "Walk Score®", tip: "walkscore.com, neighborhood center point", d: 0, s: n => n.walkscore },
+      { k: "walkscore", t: `<a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score®</a>`, tip: "official Walk Score at the neighborhood center point", d: 0, s: n => n.walkscore,
+        cell: n => n.walkscore == null ? "—" : `<a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener" title="How Walk Score works">${fmt(n.walkscore, 0)}</a>` },
     ], NBS, { sortKey: "hilliness" });
   } catch (e) { /* no neighborhoods defined for this city */ }
 }

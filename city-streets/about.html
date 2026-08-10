@@ -168,11 +168,10 @@
     share of <em>tagged</em> street length — are transparent, global, computed from our own
     data; they measure infrastructure presence and undercount where tagging is sparse.
     <b>Walk Score® / Bike Score® / Transit Score®</b> (shown when fetched) are the official
-    amenity-proximity indices from <a href="https://www.walkscore.com">walkscore.com</a>
-    (Redfin): point-based, so a city's value is the mean over sampled urban-core points and a
-    neighborhood's is its center point; coverage US/Canada (elsewhere "—"). Fetch with your
-    free key: <code>julia --project=. scripts/fetch_walkscores.jl YOUR_KEY</code>. Scores
-    courtesy of <a href="https://www.walkscore.com">Walk Score</a>.</p>
+    amenity-proximity indices from Walk Score (Redfin): point-based, so a city's value is the
+    mean over sampled urban-core points and a neighborhood's is its center point. Availability
+    varies by score and location; unavailable values appear as "—". Scores are provided by
+    <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>.</p>
   </section>
 
   <section id="parking">

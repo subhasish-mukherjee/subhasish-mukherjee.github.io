@@ -25,6 +25,7 @@ th, td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--li
 th:first-child, td:first-child { text-align: left; }
 th { cursor: pointer; user-select: none; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--bg); z-index: 2; }
 th:hover { color: var(--fg); }
+th a { color: inherit; }
 th.sorted::after { content: " ▾"; color: var(--accent); }
 th.sorted.asc::after { content: " ▴"; }
 tbody tr:hover { background: var(--panel); }
