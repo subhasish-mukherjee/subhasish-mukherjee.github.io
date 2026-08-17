@@ -14,6 +14,7 @@ project:
 website:
   title: "Subhasish Mukherjee"
   site-url: "https://subhasishmukherjee.com"   # uncomment + set once the domain is purchased
+  search: false
   favicon: favicon.png       # source is favicon.svg; regenerate with
                              #   rsvg-convert -w 180 -h 180 favicon.svg -o favicon.png
   navbar:
@@ -26,9 +27,6 @@ website:
         text: Other Interests & Projects
       - href: cv.qmd
         text: CV
-    right:
-      - icon: github
-        href: "https://github.com/subhasish-mukherjee"   # ← set me
   page-footer:
     center: "© 2026 Subhasish Mukherjee"
 
