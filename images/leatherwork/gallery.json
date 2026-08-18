@@ -1,0 +1,19 @@
+{
+  "photos": [
+    {
+      "src": "images/leatherwork/photos/belt_featured.jpg",
+      "alt": "Black leather belt with a brass buckle and teardrop-shaped holes",
+      "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/wallet-featured.jpg",
+      "alt": "Open burgundy leather bifold wallet with contrasting white stitching",
+      "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/laptop-case-featured.jpg",
+      "alt": "Brown leather laptop sleeve with green tabs and brass snap closures",
+      "featured": true
+    }
+  ]
+}

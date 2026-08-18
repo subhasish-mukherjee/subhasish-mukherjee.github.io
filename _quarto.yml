@@ -10,6 +10,7 @@ project:
     - "city-streets/"         # copied verbatim into _site/city-streets/
     - "papers/pdfs/"
     - "images/"               # leatherwork / boots / food photos
+    - "scripts/"
 
 website:
   title: "Subhasish Mukherjee"

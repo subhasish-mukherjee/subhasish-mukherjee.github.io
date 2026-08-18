@@ -33,6 +33,9 @@ h1, h2, h3 {
   gap: 1rem;
   margin: 1.25rem 0 0.5rem;
 }
+.leatherwork-gallery {
+  display: contents;
+}
 .gallery figure {
   margin: 0;
 }
@@ -50,6 +53,25 @@ h1, h2, h3 {
   color: #6c757d;
   margin-top: 0.4rem;
   text-align: center;
+}
+.gallery a {
+  display: block;
+}
+.gallery a:focus-visible {
+  outline: 3px solid #0d6efd;
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+.gallery-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #6c757d;
+  font-style: italic;
+}
+.gallery-link {
+  display: inline-block;
+  margin-top: 0.9rem;
+  font-weight: 600;
 }
 
 /* Placeholder tile shown until a real photo is dropped in. */

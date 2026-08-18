@@ -34,26 +34,28 @@ being in Chicago is that the
 [Horween Leather Company](https://www.horween.com/) is here.
 
 <div class="gallery">
-  <!-- To add a photo: drop the image in images/leatherwork/ and replace one
-       placeholder below with, e.g.:
-       <figure><img src="images/leatherwork/wallet.jpg" alt="Hand-stitched wallet">
-       <figcaption>Hand-stitched bifold</figcaption></figure> -->
-  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🧵</span>photo coming soon</div></figure>
+  <div class="leatherwork-gallery" data-gallery-mode="featured"
+       data-gallery-url="images/leatherwork/gallery.json"
+       data-empty-message="Three featured leatherwork photos will appear here soon."></div>
 </div>
+
+[Browse the full leatherwork gallery](leatherwork.qmd){.gallery-link}
+
+<script src="scripts/leatherwork-gallery.js"></script>
 :::
 
 ::: {.section-block}
 ## Boots
 
-I wear and care for heritage boots. What interests me is patina, meaning the way
-a pair takes on the shape and markings of the person wearing it over time.
+I like wearing leather boots :) Leather molds to your feet, breathes well, is
+very durable, and ages beautifully—you should try it. Every year, Stitchdown
+hosts the Patina Thunderdome, a six-month contest in which entrants wear and
+care for a pair of boots, which are then judged on how they age. I won the
+pre-worn division last year.
 
 <div class="award">
   <span class="trophy">🏆</span>
-  <span class="award-text"><strong>Grand Prize, Patina Thunderdome 2025–2026, Pre-Worn division.</strong>
-  A competition judging how a pair of boots has been broken in over time.</span>
+  <span class="award-text"><strong><a href="https://www.stitchdown.com/patina-thunderdome/2025-26-thunderdome-winners/">Grand Prize, Patina Thunderdome 2025–2026, Pre-Worn division.</a></strong></span>
 </div>
 
 <div class="gallery">

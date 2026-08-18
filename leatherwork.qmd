@@ -1,0 +1,13 @@
+---
+title: "Leatherwork Gallery"
+---
+
+Small goods made from vegetable-tanned leather, cut and saddle-stitched by hand.
+
+<div class="gallery">
+  <div class="leatherwork-gallery" data-gallery-mode="all"
+       data-gallery-url="images/leatherwork/gallery.json"
+       data-empty-message="Leatherwork photos will appear here soon."></div>
+</div>
+
+<script src="scripts/leatherwork-gallery.js"></script>
