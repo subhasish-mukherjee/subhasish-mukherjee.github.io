@@ -7,10 +7,10 @@
     link.href = photo.src;
     link.target = "_blank";
     link.rel = "noopener";
-    link.setAttribute("aria-label", `Open full-size image: ${photo.alt}`);
+    link.setAttribute("aria-label", "Open full-size leatherwork photo");
 
     image.src = photo.src;
-    image.alt = photo.alt;
+    image.alt = "";
     image.loading = "lazy";
     link.append(image);
     figure.append(link);

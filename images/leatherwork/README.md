@@ -10,14 +10,12 @@ Use the following shape for every photo in `gallery.json`:
 ```json
 {
   "src": "images/leatherwork/photos/01-bifold-wallet.jpg",
-  "alt": "Hand-stitched brown bifold wallet open on a workbench",
   "caption": "Bifold wallet in natural vegetable-tanned leather.",
   "featured": true
 }
 ```
 
 - `src` is required and must match the image's filename exactly.
-- `alt` is required; briefly describe what is visible in the photo.
 - `caption` is optional. Omit it when the image does not need one.
 - Set `featured` to `true` on exactly three photos. Those appear first on the
   Other Interests & Projects page; every photo appears in the full gallery.

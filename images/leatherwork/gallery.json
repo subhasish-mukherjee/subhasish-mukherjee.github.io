@@ -2,18 +2,45 @@
   "photos": [
     {
       "src": "images/leatherwork/photos/belt_featured.jpg",
-      "alt": "Black leather belt with a brass buckle and teardrop-shaped holes",
       "featured": true
     },
     {
       "src": "images/leatherwork/photos/wallet-featured.jpg",
-      "alt": "Open burgundy leather bifold wallet with contrasting white stitching",
       "featured": true
     },
     {
       "src": "images/leatherwork/photos/laptop-case-featured.jpg",
-      "alt": "Brown leather laptop sleeve with green tabs and brass snap closures",
       "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20240812_180151064.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20241217_234136539.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20241218_041900504.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250320_225715718.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250320_225725082.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250327_162342895.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20251217_144044226.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20251217_144134507.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260103_145507917.jpg"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260103_145732672.PORTRAIT.jpg"
     }
   ]
 }

@@ -59,12 +59,8 @@ pre-worn division last year.
 </div>
 
 <div class="gallery">
-  <!-- To add a photo: drop the image in images/boots/ and replace one
-       placeholder below with, e.g.:
-       <figure><img src="images/boots/patina.jpg" alt="Patina on a pair of boots">
-       <figcaption>Thunderdome pair</figcaption></figure> -->
-  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
-  <figure><div class="ph"><span class="ph-icon">🥾</span>photo coming soon</div></figure>
+  <figure><a href="images/boots/PXL_20260401_125333030.PORTRAIT.jpg" target="_blank" rel="noopener"><img src="images/boots/PXL_20260401_125333030.PORTRAIT.jpg" alt="" loading="lazy"></a></figure>
+  <figure><a href="images/boots/PXL_20260401_125346959.PORTRAIT.jpg" target="_blank" rel="noopener"><img src="images/boots/PXL_20260401_125346959.PORTRAIT.jpg" alt="" loading="lazy"></a></figure>
+  <figure><a href="images/boots/PXL_20260401_145144785.jpg" target="_blank" rel="noopener"><img src="images/boots/PXL_20260401_145144785.jpg" alt="" loading="lazy"></a></figure>
 </div>
 :::
