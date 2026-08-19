@@ -24,33 +24,38 @@
   <label class="muted">sort by&nbsp;
     <select id="sort">
       <option value="phi">grid order φ</option>
-      <option value="hilliness">hilliness</option>
-      <option value="entropy2d">entropy</option>
-      <option value="turn_rate">curviness</option>
-      <option value="name">name</option>
+    </select></label>
+  <label class="muted">order&nbsp;
+    <select id="direction">
+      <option value="desc">descending</option>
+      <option value="asc">ascending</option>
     </select></label>
 </header>
 <main>
-  <p class="muted">Every city's bearing rose (length-weighted, area-proportional wedges) — after
-    <a href="https://geoffboeing.com/2019/09/urban-street-network-orientation/">Boeing (2019)</a>.
-    A tight cross = a grid; a disc = disorder. Click through for the 3D measure.</p>
+  <p class="muted">Taken from
+    <a href="https://geoffboeing.com/2019/09/urban-street-network-orientation/">Geoff Boeing</a>,
+    a way to visualize all the angles of city intersections.</p>
   <div class="roses" id="roses"></div>
 </main>
 <script src="js/common.js"></script>
 <script>
 let ROSES = [];
 function render() {
-  const k = document.getElementById("sort").value;
   const reg = document.getElementById("region").value;
+  const direction = document.getElementById("direction").value;
   const shown = reg ? ROSES.filter(r => r.region === reg) : ROSES;
-  const sorted = [...shown].sort((a, b) =>
-    k === "name" ? a.name.localeCompare(b.name) : ((b[k] ?? -1) - (a[k] ?? -1)));
+  const sorted = [...shown].sort((a, b) => {
+    if (a.phi == null) return 1;
+    if (b.phi == null) return -1;
+    return direction === "asc" ? a.phi - b.phi : b.phi - a.phi;
+  });
   document.getElementById("roses").innerHTML = sorted.map(r =>
     `<div class="rose-card"><a href="city.html?slug=${r.slug}">${r.name}</a>
      ${roseSVG(r.proportions)}
-     <div class="sub">φ ${fmt(r.phi, 2)} · hilly ${fmt(r.hilliness, 1)}% · turn ${fmt(r.turn_rate, 0)}</div></div>`).join("");
+     <div class="sub">φ ${fmt(r.phi, 2)} · hilly ${fmt(r.hilliness, 1)}%</div></div>`).join("");
 }
 document.getElementById("sort").onchange = render;
+document.getElementById("direction").onchange = render;
 api("api/roses.json").then(d => {
   ROSES = d;
   const sel = document.getElementById("region");

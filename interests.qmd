@@ -8,21 +8,13 @@ A few things I do outside of math.
 ## City Streets
 
 I am interested in how much one can learn about a city just by looking at its
-streets. The starting point is
-[Geoff Boeing](https://geoffboeing.com/)'s work on
+streets. The starting point is [Geoff Boeing](https://geoffboeing.com/)’s work on
 [urban street network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/),
-which measures how close a city is to a grid by the entropy of its street
-bearings.
-
-City Streets extends this to three dimensions. Crossing compass bearing with
-grade, each city's street network defines a probability measure on
-$\mathbb{RP}^2$. From these measures I compute rotation-aligned Wasserstein and
-Jensen–Shannon distances between 84 cities, along with measures of hilliness,
-walkability, on-street parking, and staircase streets. The project is a Julia
-package with an interactive dashboard.
-
-[Open the dashboard](/city-streets/) ·
-[More about the project](projects/city-streets.qmd)
+which measures how close a city is to a grid by the entropy of the distribution
+of its roads. I thought it might be nice to extend this to another dimension and
+look at the distribution of street angles on $\mathbb{RP}^2$. There are also
+several other measures in there such as hilliness, walkability, and staircases.
+Check out the interactive dashboard [here](/city-streets/).
 :::
 
 ::: {.section-block}

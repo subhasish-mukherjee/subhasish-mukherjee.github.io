@@ -69,8 +69,11 @@
 <script src="js/common.js"></script>
 <script>
 const slug = new URLSearchParams(location.search).get("slug");
-const gradePctOf = (iz, nz, zmax) =>
-  (100 * Math.tan(Math.asin((iz + 0.5) * zmax / nz))).toFixed(0);
+const gradeBinLabel = (iz, nz, zmax) => {
+  const lo = (100 * Math.tan(Math.asin(iz * zmax / nz))).toFixed(0);
+  const hi = (100 * Math.tan(Math.asin((iz + 1) * zmax / nz))).toFixed(0);
+  return iz === nz - 1 ? `${lo}%+` : `${lo}–${hi}%`;
+};
 
 // --- sphere tile mesh: each (azimuth × z) bin is a colored quad on the band, antipodally
 // mirrored; ext > 0 extrudes tiles radially by √(w/wmax) — the 3D analog of rose wedges.
@@ -84,9 +87,8 @@ function tileMesh(rep, ext) {
     const r = 1 + (w > 0 ? ext * Math.sqrt(w / wmax) : 0);
     const az0 = ia * 2 * Math.PI / na, az1 = (ia + 1) * 2 * Math.PI / na;
     const z0 = iz * zmax / nz, z1 = (iz + 1) * zmax / nz;
-    const gpct = gradePctOf(iz, nz, zmax);
-    const label = `bearing ${((ia + 0.5) * 360 / na).toFixed(0)}°, grade ${gpct}%` +
-                  (iz === nz - 1 ? "+" : "") + ` — ${(100 * w).toFixed(2)}%`;
+    const label = `bearing ${((ia + 0.5) * 360 / na).toFixed(0)}° · ` +
+                  `grade ${gradeBinLabel(iz, nz, zmax)} · ${(100 * w).toFixed(2)}% of length`;
     for (const sgn of [1, -1]) {                        // antipodal mirror (axial measure)
       for (const [az, zz] of [[az0, z0], [az1, z0], [az1, z1], [az0, z1]]) {
         const h = Math.sqrt(Math.max(0, 1 - zz * zz));
@@ -136,13 +138,12 @@ function drawUnrolled(rep) {
   const { na, nz, weights } = rep.sphere, zmax = rep.sphere.zmax ?? 1;
   const zrows = [], glabels = [];
   for (let iz = 0; iz < nz; iz++) {
-    zrows.push(weights.slice(iz * na, (iz + 1) * na));
-    const g = gradePctOf(iz, nz, zmax);
-    glabels.push(g + (iz === nz - 1 ? "%+" : "%"));
+    zrows.push(weights.slice(iz * na, (iz + 1) * na).map(w => 100 * w));
+    glabels.push(gradeBinLabel(iz, nz, zmax));
   }
   const bearings = Array.from({ length: na }, (_, ia) => (ia + 0.5) * 360 / na);
   Plotly.newPlot("unrolled", [{ type: "heatmap", z: zrows, x: bearings, y: glabels,
-      colorscale: seqScale(), hovertemplate: "bearing %{x:.0f}°, grade %{y} — %{z:.4f}<extra></extra>" }],
+      colorscale: seqScale(), hovertemplate: "bearing %{x:.0f}° · grade %{y} · %{z:.2f}% of length<extra></extra>" }],
     plotlyLayout({ xaxis: { title: "bearing (°)", dtick: 90 }, yaxis: { title: "grade" } }), PLOT_CFG);
 }
 
@@ -150,7 +151,10 @@ function drawRose(rep) {
   const b = rep.marginals.bearing;
   const r = b.weights.map(Math.sqrt);                    // area-proportional
   Plotly.newPlot("rose", [{ type: "barpolar", r: r.concat(r),
-      theta: b.centers.concat(b.centers.map(t => t + 180)), marker: { color: seriesMain() } }],
+      theta: b.centers.concat(b.centers.map(t => t + 180)),
+      customdata: b.weights.concat(b.weights).map(w => 100 * w),
+      hovertemplate: "bearing %{theta:.0f}° · %{customdata:.2f}% of length<extra></extra>",
+      marker: { color: seriesMain() } }],
     plotlyLayout({ polar: { angularaxis: { direction: "clockwise", rotation: 90 },
                             radialaxis: { showticklabels: false } } }), PLOT_CFG);
 }
@@ -185,8 +189,7 @@ function drawElev(rep) {
     theta.push((aLo + aHi) / 2);
     width.push(Math.max(aHi - aLo, 0.5));
     r.push(Math.sqrt(share / maxShare));
-    const trueMid = Math.atan((gLo + gHi) / 200) * 180 / Math.PI;
-    text.push(`grade ${gLo}–${last ? "∞" : gHi}% (${trueMid.toFixed(1)}°) — ${(100 * share).toFixed(2)}%`);
+    text.push(`grade ${last ? `≥${gLo}` : `${gLo}–${gHi}`}% · ${(100 * share).toFixed(2)}% of length`);
   }
   const tickvals = [], ticktext = [];   // grade-% delineations at their ×3-drawn angle
   for (const g of [0, 5, 10, 20, 30, 40, 50]) { tickvals.push(drawn(g)); ticktext.push(g + "%"); }
@@ -204,8 +207,9 @@ function drawElevDist(rep) {
   const e = fe.grade_edges_pct;
   const centers = binCenters(e.concat([e[e.length - 1] + 5]));
   Plotly.newPlot("elevdist", [{ type: "scatter", mode: "lines", x: centers, y: fe.weights,
+      customdata: fe.weights.map(w => 100 * w),
       line: { shape: "hvh", color: seriesMain() }, fill: "tozeroy", fillcolor: seriesMain() + "22",
-      hovertemplate: "grade %{x:.0f}% — %{y:.4f}<extra></extra>" }],
+      hovertemplate: "grade %{x:.0f}% · %{customdata:.2f}% of length<extra></extra>" }],
     plotlyLayout({ xaxis: { title: "grade (%)" }, yaxis: { title: "share of length", type: "log" } }), PLOT_CFG);
 }
 
@@ -218,7 +222,7 @@ function drawAttrs(rep) {
     ["Sidewalks", a.sidewalks.dist, 1, "of roads specifying sidewalks"],
     ["Cycleway", a.cycleway.dist, 2, "of roads specifying cycleways"],
     ["Transit lane", { present: s.transit_share }, 5, "of all street length"],
-    ["Alley", { present: s.alley_share }, 3, "per street length (walk net)"],
+    ["Alley", { present: s.alley_share }, 3, "of walk-network street length"],
   ];
   const traces = groups.map(([name, dist, slot, base]) => {
     const keys = Object.keys(dist).filter(k => dist[k] != null && dist[k] > 0.002).sort();
@@ -242,7 +246,7 @@ function drawAttrs(rep) {
       `roadway asphalt` +
       (s.parking_both_share != null ? ` — both-side ${pct(s.parking_both_share, 0)}, ` +
         `one-side ${pct(s.parking_one_share, 0)}` : "") +
-      ` · <span title="OSM parking coverage is uneven; this estimate rests only on the mapped streets">` +
+      ` · <span title="Share of street length with mapped parking data">` +
       `mapped on ${pct(s.parking_coverage, 0)} of streets</span>`;
   } else {
     pl.innerHTML = `<b>On-street parking:</b> too little is mapped in OSM here to estimate` +
@@ -284,21 +288,21 @@ async function drawNeighborhoodCards() {
         </div>
       </div>`).join("");
     sortableTable(document.getElementById("nbtable"), [
-      { k: "name", t: "Neighborhood", s: n => n.name, cell: n => `<b>${n.name}</b>` },
-      { k: "n_segments", t: "segs", d: 0, s: n => n.n_segments },
-      { k: "length_km", t: "km", d: 1, s: n => n.length_km },
-      { k: "phi", t: "φ order", tip: "1 = perfect grid", d: 2, s: n => n.phi },
-      { k: "entropy2d", t: "H₂D", d: 2, s: n => n.entropy2d },
-      { k: "spherical_entropy", t: "H sph", d: 2, s: n => n.spherical_entropy },
-      { k: "grid_angle", t: "grid θ°", d: 0, s: n => n.grid_angle },
-      { k: "turn_rate", t: "turn °/100m", tip: "mid-road turning (same-road chains)", d: 1, s: n => n.turn_rate },
-      { k: "hilliness", t: "hilly %", d: 1, s: n => n.hilliness },
-      { k: "frac_steeper_8pct", t: ">8%", s: n => n.frac_steeper_8pct, cell: n => pct(n.frac_steeper_8pct, 0) },
-      { k: "steps_per_km", t: "steps/km", d: 2, s: n => n.steps_per_km },
-      { k: "walk_hilliness", t: "walk hilly %", d: 1, s: n => n.walk_hilliness },
-      { k: "sidewalk_share", t: "sidewalk", s: n => n.sidewalk_share, cell: n => pct(n.sidewalk_share, 0) },
-      { k: "bike_share", t: "bike", s: n => n.bike_share, cell: n => pct(n.bike_share, 0) },
-      { k: "walkscore", t: `<a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score®</a>`, tip: "official Walk Score at the neighborhood center point", d: 0, s: n => n.walkscore,
+      { k: "name", t: "Neighborhood", tip: "Registered neighborhood window.", s: n => n.name, cell: n => `<b>${n.name}</b>` },
+      { k: "n_segments", t: "segs", tip: "Analyzed network segments.", d: 0, s: n => n.n_segments },
+      { k: "length_km", t: "km", tip: "Analyzed street length, in km.", d: 1, s: n => n.length_km },
+      { k: "phi", t: "φ order", tip: "Grid order: 1 = one grid; 0 = uniform bearings.", d: 2, s: n => n.phi },
+      { k: "entropy2d", t: "H₂D", tip: "Shannon entropy of the bearing rose.", d: 2, s: n => n.entropy2d },
+      { k: "spherical_entropy", t: "H sph", tip: "Normalized entropy of bearing × grade.", d: 2, s: n => n.spherical_entropy },
+      { k: "grid_angle", t: "grid θ°", tip: "Dominant grid rotation.", d: 0, s: n => n.grid_angle },
+      { k: "turn_rate", t: "turn °/100m", tip: "Direction change along roads per 100 m.", d: 1, s: n => n.turn_rate },
+      { k: "hilliness", t: "hilly %", tip: "Mean absolute drive-network grade.", d: 1, s: n => n.hilliness },
+      { k: "frac_steeper_8pct", t: ">8%", tip: "Share of graded drive-network length above 8%.", s: n => n.frac_steeper_8pct, cell: n => pct(n.frac_steeper_8pct, 0) },
+      { k: "steps_per_km", t: "steps/km", tip: "Connected staircases per km of walkable street.", d: 2, s: n => n.steps_per_km },
+      { k: "walk_hilliness", t: "walk hilly %", tip: "Mean absolute walk-network grade, including stairs.", d: 1, s: n => n.walk_hilliness },
+      { k: "sidewalk_share", t: "sidewalk", tip: "Street length recorded with sidewalks.", s: n => n.sidewalk_share, cell: n => pct(n.sidewalk_share, 0) },
+      { k: "bike_share", t: "bike", tip: "Street length recorded with bike infrastructure.", s: n => n.bike_share, cell: n => pct(n.bike_share, 0) },
+      { k: "walkscore", t: `<a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score®</a>`, tip: "Amenity-access score at the neighborhood center.", d: 0, s: n => n.walkscore,
         cell: n => n.walkscore == null ? "—" : `<a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener" title="How Walk Score works">${fmt(n.walkscore, 0)}</a>` },
     ], NBS, { sortKey: "hilliness" });
   } catch (e) { /* no neighborhoods defined for this city */ }
@@ -367,8 +371,7 @@ function drawParks(rep) {
   el.innerHTML = `<b>Parkland:</b> ${s.park_km2.toFixed(1)} km² — ` +
     `${pct(s.park_share, 1)}% of the ${area.toFixed(0)} km² analyzed` +
     (s.green_share != null ?
-      ` · <span title="Adds sports pitches, playgrounds, golf, forest, meadow and amenity grass — ` +
-      `land that is green but not necessarily a public park">counting all green space: ` +
+      ` · <span title="Includes parks, sports, golf, forest, meadow, and amenity grass">counting all green space: ` +
       `${s.green_km2.toFixed(1)} km² (${pct(s.green_share, 1)}%)</span>` : "") +
     ` <a href="about.html#parks">?</a>`;
 }

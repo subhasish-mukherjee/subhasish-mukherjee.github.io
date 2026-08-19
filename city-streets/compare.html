@@ -14,10 +14,7 @@
   <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html" class="active">Compare</a><a href="about.html">About</a></nav>
 </header>
 <main>
-  <h2>Cities as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
-  <p class="muted">The sphere distance compares street-direction measures on ℝP²
-    <em>modulo rotation about the vertical axis</em> — grids match however they are oriented.
-    MDS embeds the distance matrix into 2D: nearby points are similarly-built cities.</p>
+  <p class="muted">Here are various ways to compare city streets among different cities.</p>
   <label class="muted">distance&nbsp;
     <select id="kind">
       <option value="sphere">sphere W₂ — 3D (bearing × grade, mod rotation)</option>
@@ -119,7 +116,7 @@ function renderDistances() {
   document.getElementById("heat").style.height = (big ? 860 : 600) + "px";
 
   Plotly.react("heat", [{ type: "heatmap", z, x: labels, y: labels, colorscale: "Viridis",
-      hovertemplate: "%{y} ↔ %{x}: %{z:.3f}<extra></extra>" }],
+      hovertemplate: "%{y} ↔ %{x}<br>distance %{z:.3f}<extra></extra>" }],
     plotlyLayout({ margin: { l: 120, r: 12, t: 10, b: 120 },
       xaxis: { tickangle: -60, automargin: true, tickfont: { size: big ? 10 : 8 } },
       yaxis: { automargin: true, tickfont: { size: big ? 10 : 8 } } }), PLOT_CFG);
@@ -127,7 +124,8 @@ function renderDistances() {
   const colors = d.slugs.map(s => regionColor(bySlug[s]?.region));
   Plotly.react("mds", [{ type: "scatter", mode: "markers+text",
       x: d.mds.map(p => p[0]), y: d.mds.map(p => p[1]), text: d.labels,
-      textposition: "top center", textfont: { size: 9 }, marker: { size: 9, color: colors } }],
+      textposition: "top center", textfont: { size: 9 }, marker: { size: 9, color: colors },
+      hovertemplate: "%{text}<br>MDS-1 %{x:.3f} · MDS-2 %{y:.3f}<extra></extra>" }],
     plotlyLayout({ xaxis: { title: "MDS-1" }, yaxis: { title: "MDS-2" } }), PLOT_CFG);
   document.getElementById("mds").on("plotly_click", ev => {
     const i = ev.points?.[0]?.pointIndex;
@@ -147,7 +145,7 @@ function drawScatter() {
       x: pts.map(c => c[xk]), y: pts.map(c => c[yk]), text: pts.map(c => c.name),
       textposition: "top center", textfont: { size: 9 },
       marker: { size: 9, color: pts.map(c => regionColor(c.region)) },
-      hovertemplate: "%{text}: %{x:.3f}, %{y:.3f}<extra></extra>" }],
+      hovertemplate: `%{text}<br>${METRICS[xk]}: %{x:.3f}<br>${METRICS[yk]}: %{y:.3f}<extra></extra>` }],
     plotlyLayout({ xaxis: { title: METRICS[xk], type: document.getElementById("logx").checked ? "log" : "linear" },
                    yaxis: { title: METRICS[yk], type: document.getElementById("logy").checked ? "log" : "linear" } }), PLOT_CFG);
 }
@@ -166,27 +164,32 @@ async function drawOverlays() {
     const b = rep.marginals.bearing, rv = b.weights.map(Math.sqrt);
     // stepped OUTLINE instead of stacked bars: crisp closed contour per city — overlaid lines
     // stay readable where translucent fills turn to mud. Bidirectional mirror included.
-    const theta = [], r = [], n = rv.length, w = 180 / n;
+    const theta = [], r = [], share = [], n = rv.length, w = 180 / n;
     for (const half of [0, 180]) {
       for (let k = 0; k < n; k++) {
         const t0 = b.centers[k] - w / 2 + half, t1 = b.centers[k] + w / 2 + half;
-        theta.push(t0, t1); r.push(rv[k], rv[k]);
+        theta.push(t0, t1); r.push(rv[k], rv[k]); share.push(100 * b.weights[k], 100 * b.weights[k]);
       }
     }
-    theta.push(theta[0]); r.push(r[0]);   // close the contour
+    theta.push(theta[0]); r.push(r[0]); share.push(share[0]);   // close the contour
     roses.push({ type: "scatterpolar", mode: "lines", name: rep.meta.name,
-      theta, r, line: { color: OCOLORS[i], width: 2 },
+      theta, r, customdata: share,
+      hovertemplate: `${rep.meta.name}<br>bearing %{theta:.0f}° · %{customdata:.2f}% of length<extra></extra>`,
+      line: { color: OCOLORS[i], width: 2 },
       fill: "toself", fillcolor: OCOLORS[i] + "18" });
     const fe = rep.marginals.elevation_fine;
     const e = fe ?? rep.marginals.elevation;
     const centers = fe ? binCenters(fe.grade_edges_pct.concat([fe.grade_edges_pct[fe.grade_edges_pct.length-1]+5])) : binCenters(e.edges);
     elevs.push({ type: "scatter", mode: "lines+markers", name: rep.meta.name,
-      x: centers, y: e.weights, line: { shape: "hvh", color: OCOLORS[i] } });
+      x: centers, y: e.weights, customdata: e.weights.map(w => 100 * w),
+      hovertemplate: `${rep.meta.name}<br>grade %{x:.0f}% · %{customdata:.2f}% of length<extra></extra>`,
+      line: { shape: "hvh", color: OCOLORS[i] } });
   });
   const FEATS = [["Sidewalks", "sidewalk_share"], ["Bike infra", "bike_share"],
                  ["Transit lane", "transit_share"], ["Alleys", "alley_share"]];
   const charTraces = reps.map((rep, i) => ({ type: "bar", name: rep.meta.name,
     x: FEATS.map(f => f[0]), y: FEATS.map(f => 100 * (rep.scalars[f[1]] ?? 0)),
+    hovertemplate: `${rep.meta.name}<br>%{x}: %{y:.1f}% of street length<extra></extra>`,
     marker: { color: OCOLORS[i] } }));
   Plotly.react("ochar", charTraces, plotlyLayout({ barmode: "group", showlegend: true,
     yaxis: { title: "% of street length", ticksuffix: "%" } }), PLOT_CFG);
