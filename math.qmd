@@ -1,17 +1,14 @@
 ---
 title: "Math"
 listing:
-  - id: publications
-    contents: "papers/publications"
+  - id: papers-preprints
+    contents:
+      - "papers/publications"
+      - "papers/preprints"
     type: default
     sort: "date desc"
     fields: [title, subtitle, date]
-  - id: preprints
-    contents: "papers/preprints"
-    type: default
-    sort: "date desc"
-    fields: [title, subtitle, date]
-  - id: expository
+  - id: other
     contents: "papers/expository"
     type: default
     sort: "date desc"
@@ -30,23 +27,18 @@ I have also worked on harmonic analysis, descriptive set theory, and function
 spaces arising in PDE, including a scale of anisotropic Sobolev spaces adapted
 to traveling wave problems.
 
-## Publications
+## Papers/Preprints
 
-::: {#publications}
+::: {#papers-preprints}
 :::
 
-## Preprints
+## Other
 
-::: {#preprints}
-:::
-
-## Expository Work
-
-::: {#expository}
+::: {#other}
 :::
 
 <!-- To add an item: drop a .qmd into papers/publications/, papers/preprints/, or
-     papers/expository/. It auto-appears in that section (sorted newest first).
+     papers/expository/. It auto-appears in the appropriate section (sorted newest first).
      Front matter: title, date, and subtitle (the coauthor + venue line, e.g.
      "with Ian Tice · Communications on Pure and Applied Analysis"). Put the
      citation/abstract/links in the body. Self-hosted PDFs go in papers/pdfs/

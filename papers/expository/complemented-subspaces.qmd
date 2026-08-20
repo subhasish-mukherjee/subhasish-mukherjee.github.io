@@ -1,0 +1,7 @@
+---
+title: "Complemented Subspaces"
+subtitle: "Math Studies Analysis II seminar notes"
+date: "2022-02-01"
+---
+
+[Read the notes (PDF)](ComplementedSubspaces.pdf)

@@ -1,0 +1,7 @@
+---
+title: "Entropy and the Geometry of Chaos"
+subtitle: "From Shannon’s coin flips to Pesin’s entropy formula · Lecture notes"
+date: "2026-07-31"
+---
+
+[Read the notes (PDF)](entropy-notes.pdf)

@@ -1,0 +1,7 @@
+---
+title: "Automatic Continuity of Group Homomorphisms"
+subtitle: "Dynamics of Polish Groups course notes"
+date: "2023-12-15"
+---
+
+[Read the notes (PDF)](automatic-continuity-of-group-homs-notes.pdf)

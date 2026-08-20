@@ -1,0 +1,7 @@
+---
+title: "On a Class of Anisotropic Sobolev Spaces, and an Extension of an Elementary Integral"
+subtitle: "Master’s thesis · Carnegie Mellon University"
+date: "2024-07-31"
+---
+
+[Read the thesis (PDF)](cmu_masters_thesis.pdf)

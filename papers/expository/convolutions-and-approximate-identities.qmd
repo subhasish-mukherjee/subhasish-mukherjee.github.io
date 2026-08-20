@@ -1,0 +1,7 @@
+---
+title: "Convolutions and Approximate Identities"
+subtitle: "Math Studies Analysis II seminar notes"
+date: "2022-04-05"
+---
+
+[Read the notes (PDF)](ConvolutionsandApproximateIdentities.pdf)
