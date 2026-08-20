@@ -25,7 +25,7 @@ explicitly labeled study areas.
 
 The dashboard includes:
 
-- A sortable table of about 30 comparable measures per city
+- A sortable master table of key measures, with 42 scalar metrics available in Compare
 - Per-city pages with the direction measure on the sphere, bearing roses, hill
   fans, street-character breakdowns, and a map of the analyzed urban core
 - A distance heatmap and MDS embedding, showing which cities are built alike up

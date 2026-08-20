@@ -35,10 +35,10 @@ const COLS = [
   { k: "extent", t: "Window", tip: "boundary = city limits minus low-density areas; disc = fixed-radius center window", d: null, s: r => r.extent ?? "disc",
     cell: r => `<span class="tag">${escapeHTML(humanLabel(r.extent ?? "disc"))}</span>` },
   { k: "phi", t: "φ order", tip: "orientation order: 1 = one perfect grid, 0 = maximal disorder (Boeing)", d: 3, s: r => r.phi },
-  { k: "entropy2d", t: "H₂D", tip: "Shannon entropy of the 36-bin bearing rose (ln 4 ≈ 1.386 grid … ln 36 ≈ 3.584 uniform)", d: 3, s: r => r.entropy2d },
+  { k: "entropy2d", t: "H₂D", tip: "Shannon entropy of the 36-bin bearing rose (ln 4 ≈ 1.386 ideal orthogonal-grid reference; ln 36 ≈ 3.584 uniform maximum)", d: 3, s: r => r.entropy2d },
   { k: "spherical_entropy", t: "H sphere", tip: "normalized entropy of the (bearing × grade) measure over the ≤50%-grade band; 1 = uniform", d: 3, s: r => r.spherical_entropy },
   { k: "vertical_fraction", t: "vertical energy %", tip: "length-weighted mean squared vertical component of street direction", d: null, s: r => r.vertical_fraction, cell: r => pct(r.vertical_fraction, 2) },
-  { k: "sphericity", t: "spher.", tip: "τ₃/τ₁ of the orientation tensor: 0 = directions on a line, 1 = isotropic", d: 3, s: r => r.sphericity },
+  { k: "sphericity", t: "spher.", tip: "τ₃/τ₁ of the orientation tensor: 0 when directions lie in a plane, 1 when all three tensor eigenvalues are equal", d: 3, s: r => r.sphericity },
   { k: "grid_angle", t: "grid θ°", tip: "dominant grid rotation from the 4-fold moment of the bearing measure", d: 1, s: r => r.grid_angle },
   { k: "hilliness", t: "hilly %", tip: "length-weighted mean |grade| of drivable streets, %", d: 2, s: r => r.hilliness },
   { k: "steep8", t: ">8% len", tip: "share of street length steeper than 8% grade", d: null, s: r => r.steep8, cell: r => pct(r.steep8, 1) },
@@ -53,8 +53,8 @@ const COLS = [
   { k: "pop_density", t: "pop/km²", tip: "approx. city-proper population ÷ city-proper land area (registry data — consistent units)", d: 0, s: r => r.pop_density },
   { k: "signals_per_km2", t: "signals/km²", tip: "traffic signals per km² of urban core (OSM highway=traffic_signals)", d: 1, s: r => r.signals_per_km2 },
   { k: "four_way", t: "4-way %", tip: "share of intersections with 4 streets — the hallmark of grids", d: null, s: r => r.four_way, cell: r => pct(r.four_way, 1) },
-  { k: "park_share", t: "park %", tip: "public parkland as a share of the analyzed core, measured as a raster union of OSM park polygons (no double-counting of overlapping parks)", d: null, s: r => r.park_share, cell: r => pct(r.park_share, 1) },
-  { k: "park_km2", t: "park km²", tip: "total public parkland inside the analyzed core", d: 1, s: r => r.park_km2 },
+  { k: "park_share", t: "park %", tip: "share of the analyzed core covered by selected OSM park-like polygons, measured as a raster union; public access is not independently verified", d: null, s: r => r.park_share, cell: r => pct(r.park_share, 1) },
+  { k: "park_km2", t: "park km²", tip: "raster-union area of selected OSM park-like polygons inside the analyzed core", d: 1, s: r => r.park_km2 },
 ];
 let rows = [], renderTable = null;
 

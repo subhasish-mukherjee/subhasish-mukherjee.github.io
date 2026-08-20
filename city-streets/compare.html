@@ -14,7 +14,7 @@
   <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html" class="active">Compare</a><a href="about.html">About</a></nav>
 </header>
 <main>
-  <h2>Cities as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
+  <h2>Study areas as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
   <p class="muted">The sphere distance compares street-direction measures on ℝP²
     <em>modulo rotation about the vertical axis</em> — grids match however they are oriented.
     The 3D W₂ alignment searches the most promising rotation candidates (see the method note).
@@ -33,17 +33,16 @@
       <option value="mds">by MDS-1 (similarity)</option>
       <option value="name">by name</option>
     </select></label>
-  <label class="muted"><input type="checkbox" id="bigheat"> enlarge heatmap</label>
   <div class="grid" id="distgrid">
-    <div class="panel" id="heatpanel"><b>Distance heatmap</b>
+    <div class="panel"><b>Distance heatmap</b>
       <span class="muted">ordered so structure is visible — near-diagonal blocks are families of
-        similar cities; click a row label or MDS point to open the city.</span>
+        similar cities; click a heatmap cell or MDS point to open the city.</span>
       <div id="heat" class="plot" style="height:600px"></div></div>
-    <div class="panel" id="mdspanel"><b>MDS embedding</b> <span class="muted">(color = region)</span>
+    <div class="panel"><b>MDS embedding</b> <span class="muted">(color = region)</span>
       <div id="mds" class="plot" style="height:600px"></div></div>
   </div>
 
-  <h2>Metric scatter — pick any two axes</h2>
+  <h2>Metric scatter — pick any two axes <a class="muted" href="about.html#glossary">(?)</a></h2>
   <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px">
     <label class="muted">x <select id="xaxis"></select></label>
     <label class="muted">y <select id="yaxis"></select></label>
@@ -57,8 +56,8 @@
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>;
     availability varies by location.</p>
 
-  <h2>Overlay cities</h2>
-  <p class="muted">Select up to 3 cities to superimpose their bearing roses and elevation-angle
+  <h2>Overlay study areas</h2>
+  <p class="muted">Select up to 3 study areas to superimpose their bearing roses and elevation-angle
     distributions.</p>
   <div id="citypick" style="display:flex; gap:8px; margin-bottom:8px"></div>
   <div class="panel"><b>Street character (overlaid)</b>
@@ -98,7 +97,7 @@ const metricValue = (city, key) => city[key] == null ? null :
 let CITIES = [];
 
 // --- distances (heatmap + MDS) ---
-let DIST = null;   // cache the last-fetched matrix so re-ordering/resizing needn't refetch
+let DIST = null;   // cache the last-fetched matrix so re-ordering needn't refetch
 let distanceRequest = 0;
 async function drawDistances(kind) {
   const request = ++distanceRequest;
@@ -124,16 +123,11 @@ function renderDistances() {
   const labels = P.map(i => d.labels[i]);
   const z = P.map(i => P.map(j => d.matrix[i][j]));
 
-  const big = document.getElementById("bigheat").checked;
-  document.getElementById("heatpanel").style.gridColumn = big ? "1 / -1" : "";
-  document.getElementById("mdspanel").style.display = big ? "none" : "";
-  document.getElementById("heat").style.height = (big ? 860 : 600) + "px";
-
   Plotly.react("heat", [{ type: "heatmap", z, x: labels, y: labels, colorscale: "Viridis",
       hovertemplate: "%{y} ↔ %{x}: %{z:.3f}<extra></extra>" }],
     plotlyLayout({ margin: { l: 120, r: 12, t: 10, b: 120 },
-      xaxis: { tickangle: -60, automargin: true, tickfont: { size: big ? 10 : 8 } },
-      yaxis: { automargin: true, tickfont: { size: big ? 10 : 8 } } }), PLOT_CFG);
+      xaxis: { tickangle: -60, automargin: true, tickfont: { size: 8 } },
+      yaxis: { automargin: true, tickfont: { size: 8 } } }), PLOT_CFG);
 
   const regions = [...new Set(d.slugs.map(s => bySlug[s]?.region ?? "unknown"))].sort();
   const mdsTraces = regions.map(region => {
@@ -160,7 +154,6 @@ function renderDistances() {
 document.getElementById("kind").onchange = e => drawDistances(e.target.value)
   .catch(err => showError(document.getElementById("heat"), "Unable to load distances: ", err));
 document.getElementById("order").onchange = renderDistances;
-document.getElementById("bigheat").onchange = renderDistances;
 
 // --- scalar scatter with axis pickers ---
 function drawScatter() {
