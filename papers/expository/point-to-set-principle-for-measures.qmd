@@ -1,6 +1,10 @@
 ---
 title: "Point-to-Set Principle for Measures"
-subtitle: "Expository notes"
+subtitle: >-
+  These are some notes I wrote for my presentation for the graduate Topics in
+  Logic course at UChicago on complexity theory and the point-to-set principle
+  (there are definitely some minor math/formatting errors). They included a
+  known but unpublished result in the point-to-set principle for metric entropy.
 date: "2026-05-02"
 ---
 

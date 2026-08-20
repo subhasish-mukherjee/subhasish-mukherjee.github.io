@@ -1,6 +1,8 @@
 ---
 title: "Automatic Continuity of Group Homomorphisms"
-subtitle: "Dynamics of Polish Groups course notes"
+subtitle: >-
+  These are some notes I wrote for the Dynamics of Polish Groups class I took at
+  Carnegie Mellon on automatic continuity of group homomorphisms
 date: "2023-12-15"
 ---
 

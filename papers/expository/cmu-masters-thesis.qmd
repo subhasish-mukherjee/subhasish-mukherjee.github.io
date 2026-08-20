@@ -1,6 +1,11 @@
 ---
 title: "On a Class of Anisotropic Sobolev Spaces, and an Extension of an Elementary Integral"
-subtitle: "Master’s thesis · Carnegie Mellon University"
+subtitle: >-
+  This was my master's thesis for the CMU math honors program. They include my
+  published work on anisotropic Sobolev spaces, along with exposition of an
+  extension of Dieudonne's Cauchy integral, or regulated integral. I extended
+  this integral to work in very general settings and integrate functions taking
+  values in locally convex spaces.
 date: "2024-07-31"
 ---
 

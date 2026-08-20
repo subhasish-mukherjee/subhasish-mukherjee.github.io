@@ -1,6 +1,8 @@
 ---
 title: "Topology Supplement"
-subtitle: "Mathematical Studies Analysis course notes"
+subtitle: >-
+  These are some notes I wrote for my recitations for the Math Studies Analysis
+  classes at Carnegie Mellon to supplement the standard course notes
 date: "2023-11-16"
 ---
 
