@@ -1,6 +1,6 @@
 ---
 title: "City Streets"
-description: "Street networks as probability measures on ℝP², with orientation entropy in 3D, Wasserstein distances between 84 cities, hilliness, walkability, and staircase censuses."
+description: "Street networks as probability measures on ℝP², with 3D orientation entropy, city similarity, hilliness, walkability, and staircase censuses."
 date: 2026-07-23
 ---
 
@@ -17,7 +17,9 @@ $\mathbb{RP}^2$. From these measures I compute Wasserstein and Jensen–Shannon
 distances between cities, taken modulo rotation about the vertical axis, so that
 two cities laid out alike but oriented differently are recognized as similar.
 The same data gives comparable measures of hilliness, walkability, on-street
-parking, and staircase streets across 84 cities.
+parking, and staircase streets across cities worldwide.
+The current release compares 133 study areas, including all five New York City boroughs as
+explicitly labeled study areas.
 
 **[Open the interactive dashboard](/city-streets/)**
 

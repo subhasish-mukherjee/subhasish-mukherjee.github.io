@@ -9,3 +9,6 @@ _site/
 .env
 .env.*
 !.env.example
+
+# Separate local City Streets source/cache checkout (3+ GB); only its static export is published.
+/StreetSpherefull/

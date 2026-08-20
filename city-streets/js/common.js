@@ -8,6 +8,30 @@ async function api(path) {
 const fmt = (x, d = 2) => (x === null || x === undefined || Number.isNaN(x)) ? "—" : (+x).toFixed(d);
 const pct = (x, d = 1) => (x === null || x === undefined) ? "—" : (100 * x).toFixed(d);
 
+// All OSM/registry strings are data, not markup. Keep the few templates below readable while
+// ensuring a future malicious street or city name cannot become stored HTML/script.
+const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}[ch]));
+const cityHref = slug => `city.html?slug=${encodeURIComponent(String(slug ?? ""))}`;
+const humanLabel = value => {
+  const special = { africa_me: "Africa & Middle East", grid_radial: "Grid / radial",
+    hilly_grid: "Hilly grid", hilly_organic: "Hilly organic", extreme_hilly: "Extremely hilly" };
+  const s = String(value ?? "");
+  return special[s] ?? s.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+};
+function addOption(select, value, label = humanLabel(value), selected = false) {
+  const option = document.createElement("option");
+  option.value = String(value); option.textContent = label; option.selected = selected;
+  select.appendChild(option);
+  return option;
+}
+function showError(target, prefix, error) {
+  const p = document.createElement("p"); p.className = "muted";
+  p.textContent = `${prefix}${error?.message ?? error}`;
+  target.appendChild(p);
+}
+
 const isDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
 
 // --- palette (validated reference; see dataviz method) --------------------------------------
@@ -61,14 +85,27 @@ function sortableTable(tableEl, cols, rows, { sortKey = cols[0].k, asc = false,
       x = x ?? -Infinity; y = y ?? -Infinity;
       return asc ? x - y : y - x;
     });
-    tableEl.querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
-      `<th data-k="${c.k}" title="${c.tip ?? ""}" class="${c.k === sortKey ? "sorted " + (asc ? "asc" : "") : ""}">${c.t}</th>`).join("") + "</tr>";
+    const head = tableEl.querySelector("thead"), headRow = document.createElement("tr");
+    head.replaceChildren(headRow);
+    cols.forEach(c => {
+      const th = document.createElement("th");
+      th.dataset.k = c.k; th.title = c.tip ?? ""; th.tabIndex = 0;
+      th.setAttribute("role", "button");
+      th.setAttribute("aria-sort", c.k === sortKey ? (asc ? "ascending" : "descending") : "none");
+      th.className = c.k === sortKey ? `sorted ${asc ? "asc" : ""}` : "";
+      th.innerHTML = c.t; // column definitions are local, trusted markup (e.g. attribution link)
+      headRow.appendChild(th);
+    });
     tableEl.querySelector("tbody").innerHTML = sorted.map(r => "<tr>" + cols.map(c =>
       `<td>${c.cell ? c.cell(r) : fmt(c.s(r), c.d)}</td>`).join("") + "</tr>").join("");
-    tableEl.querySelectorAll("th").forEach(th => th.onclick = () => {
+    tableEl.querySelectorAll("th").forEach(th => {
+      const activate = () => {
       const k = th.dataset.k;
       if (k === sortKey) asc = !asc; else { sortKey = k; asc = false; }
       render();
+      };
+      th.onclick = activate;
+      th.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); } };
     });
     onRender && onRender(sorted.length);
   }
@@ -92,7 +129,15 @@ function roseSVG(props, { size = 110, fill = seriesMain() } = {}) {
            `A${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${(r * Math.sin(t1)).toFixed(1)} ${(-r * Math.cos(t1)).toFixed(1)} Z `;
     }
   }
-  return `<svg viewBox="-55 -55 110 110" width="${size}" height="${size}">` +
+  return `<svg viewBox="-55 -55 110 110" width="${Number(size)}" height="${Number(size)}" role="img" aria-label="Street-bearing rose">` +
          `<circle r="50" fill="none" stroke="var(--line)"/>` +
-         `<path d="${d}" fill="${fill}" fill-opacity="0.85"/></svg>`;
+         `<path d="${d}" fill="${escapeHTML(fill)}" fill-opacity="0.85"/></svg>`;
+}
+
+// Persistent attribution on every dashboard view (not only the methodology page).
+if (!document.getElementById("data-attribution")) {
+  const footer = document.createElement("footer"); footer.id = "data-attribution";
+  footer.innerHTML = 'Street data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · ' +
+    '<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">AWS Terrain Tiles</a>';
+  document.body.appendChild(footer);
 }

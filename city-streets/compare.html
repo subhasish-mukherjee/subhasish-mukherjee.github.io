@@ -14,7 +14,11 @@
   <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html" class="active">Compare</a><a href="about.html">About</a></nav>
 </header>
 <main>
-  <p class="muted">Here are various ways to compare city streets among different cities.</p>
+  <h2>Cities as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
+  <p class="muted">The sphere distance compares street-direction measures on ℝP²
+    <em>modulo rotation about the vertical axis</em> — grids match however they are oriented.
+    The 3D W₂ alignment searches the most promising rotation candidates (see the method note).
+    MDS embeds the distance matrix into 2D: nearby points are similarly-built cities.</p>
   <label class="muted">distance&nbsp;
     <select id="kind">
       <option value="sphere">sphere W₂ — 3D (bearing × grade, mod rotation)</option>
@@ -40,13 +44,14 @@
   </div>
 
   <h2>Metric scatter — pick any two axes</h2>
-  <div style="display:flex; gap:10px; margin-bottom:8px">
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px">
     <label class="muted">x <select id="xaxis"></select></label>
     <label class="muted">y <select id="yaxis"></select></label>
     <label class="muted">region <select id="regionfilter"><option value="">all regions</option></select></label>
     <label class="muted"><input type="checkbox" id="logx"> log x</label>
     <label class="muted"><input type="checkbox" id="logy"> log y</label>
   </div>
+  <p class="muted" id="scatternote" aria-live="polite"></p>
   <div class="panel"><div id="scatter" class="plot" style="height:560px"></div></div>
   <p class="muted">Walk Score®, Bike Score®, and Transit Score® values are provided by
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>;
@@ -71,26 +76,35 @@
 <script>
 const METRICS = {
   phi: "φ order", entropy2d: "H₂D entropy", spherical_entropy: "H sphere",
-  vertical_fraction: "vertical fraction", sphericity: "sphericity", grid_angle: "grid angle °",
-  hilliness: "hilliness %", steep8: ">8% length share", walk_hilliness: "walk hilliness %",
-  steps_per_km: "staircases / km", major_stairs: "major staircases (count)", major_stairs_per_km_street: "major stairs / km street", major_stairs_per_km2: "major stairs / km² (extent-sensitive)", mean_stair_m: "mean staircase length (m)", circuity: "circuity", turn_rate: "turn rate °/100m",
-  four_way: "4-way share", mean_block_m: "mean block length (m)",
+  vertical_fraction: "vertical energy (%)", sphericity: "sphericity", grid_angle: "grid angle °",
+  hilliness: "hilliness %", steep8: ">8% length (%)", walk_hilliness: "walk hilliness %",
+  steps_per_km: "staircases / km", major_stairs: "major staircases (count)", major_stairs_per_km_street: "major stairs / km street", major_stairs_per_km2: "major stairs / km² (extent-sensitive)", mean_stair_m: "mean staircase length (m)", circuity: "OSM-way circuity", turn_rate: "turn rate °/100m",
+  four_way: "4-way intersections (%)", mean_block_m: "mean road-chain length (m)",
   signals_per_km2: "traffic signals / km²", signals_per_intersection: "signals / intersection",
-  oneway_share: "one-way share", bridge_share: "bridge share", walkscore: "Walk Score®", bikescore: "Bike Score®", transitscore: "Transit Score®", population: "population (approx.)", pop_density: "pop density (per city km²)", core_area_km2: "analyzed core area (km²)",
+  oneway_share: "one-way share (%)", bridge_share: "bridge share (%)", walkscore: "Walk Score®", bikescore: "Bike Score®", transitscore: "Transit Score®", population: "population (approx.)", pop_density: "pop density (per city km²)", core_area_km2: "analyzed core area (km²)",
   land_km2: "city land area (km²)",
   intersection_density: "intersections / km²", street_km_per_km2: "street km / km²",
-  sidewalk_share: "sidewalk share", bike_share: "bike-infra share", transit_share: "transit-lane share", alley_share: "alley share", mean_lanes: "mean lanes/road",
-  parking_asphalt_share: "on-street parking (% of asphalt, where mapped)", parking_coverage: "parking mapping coverage",
-  park_share: "parkland share of analyzed land", park_km2: "parkland (km²)",
-  green_share: "all green space share", green_km2: "all green space (km²)",
+  sidewalk_share: "OSM-mapped sidewalk share (%)", bike_share: "OSM-mapped bike provision (%)", transit_share: "OSM-mapped transit-lane share (%)", alley_share: "OSM-mapped alley / drive length (%)", mean_lanes: "mean lanes/road",
+  parking_asphalt_share: "on-street parking (% of asphalt, where mapped)", parking_coverage: "parking mapping coverage (%)",
+  park_share: "parkland share of analyzed land (%)", park_km2: "parkland (km²)",
+  green_share: "all green space share (%)", green_km2: "all green space (km²)",
 };
+const FRACTION_METRICS = new Set(["vertical_fraction", "steep8", "four_way", "oneway_share",
+  "bridge_share", "sidewalk_share", "bike_share", "transit_share", "alley_share",
+  "parking_asphalt_share", "parking_coverage", "park_share", "green_share"]);
+const metricValue = (city, key) => city[key] == null ? null :
+  (FRACTION_METRICS.has(key) ? 100 * Number(city[key]) : Number(city[key]));
 // region colors come from the fixed categorical slots in common.js (regionColor)
 let CITIES = [];
 
 // --- distances (heatmap + MDS) ---
 let DIST = null;   // cache the last-fetched matrix so re-ordering/resizing needn't refetch
+let distanceRequest = 0;
 async function drawDistances(kind) {
-  DIST = await api(`api/distances/${kind}.json`);
+  const request = ++distanceRequest;
+  const next = await api(`api/distances/${encodeURIComponent(kind)}.json`);
+  if (request !== distanceRequest) return; // a slower previous selection cannot win the race
+  DIST = next;
   renderDistances();
 }
 function renderDistances() {
@@ -116,23 +130,35 @@ function renderDistances() {
   document.getElementById("heat").style.height = (big ? 860 : 600) + "px";
 
   Plotly.react("heat", [{ type: "heatmap", z, x: labels, y: labels, colorscale: "Viridis",
-      hovertemplate: "%{y} ↔ %{x}<br>distance %{z:.3f}<extra></extra>" }],
+      hovertemplate: "%{y} ↔ %{x}: %{z:.3f}<extra></extra>" }],
     plotlyLayout({ margin: { l: 120, r: 12, t: 10, b: 120 },
       xaxis: { tickangle: -60, automargin: true, tickfont: { size: big ? 10 : 8 } },
       yaxis: { automargin: true, tickfont: { size: big ? 10 : 8 } } }), PLOT_CFG);
 
-  const colors = d.slugs.map(s => regionColor(bySlug[s]?.region));
-  Plotly.react("mds", [{ type: "scatter", mode: "markers+text",
-      x: d.mds.map(p => p[0]), y: d.mds.map(p => p[1]), text: d.labels,
-      textposition: "top center", textfont: { size: 9 }, marker: { size: 9, color: colors },
-      hovertemplate: "%{text}<br>MDS-1 %{x:.3f} · MDS-2 %{y:.3f}<extra></extra>" }],
-    plotlyLayout({ xaxis: { title: "MDS-1" }, yaxis: { title: "MDS-2" } }), PLOT_CFG);
-  document.getElementById("mds").on("plotly_click", ev => {
-    const i = ev.points?.[0]?.pointIndex;
-    i != null && (location.href = `city.html?slug=${d.slugs[i]}`);
+  const regions = [...new Set(d.slugs.map(s => bySlug[s]?.region ?? "unknown"))].sort();
+  const mdsTraces = regions.map(region => {
+    const idx = d.slugs.map((_, i) => i).filter(i => (bySlug[d.slugs[i]]?.region ?? "unknown") === region);
+    return { type: "scatter", mode: "markers+text", name: humanLabel(region),
+      x: idx.map(i => d.mds[i][0]), y: idx.map(i => d.mds[i][1]), text: idx.map(i => d.labels[i]),
+      customdata: idx.map(i => d.slugs[i]), textposition: "top center", textfont: { size: 9 },
+      marker: { size: 9, color: regionColor(region) },
+      hovertemplate: "%{text}<br>MDS-1 %{x:.3f} · MDS-2 %{y:.3f}<extra></extra>" };
+  });
+  Plotly.react("mds", mdsTraces,
+    plotlyLayout({ showlegend: true, xaxis: { title: "MDS-1" }, yaxis: { title: "MDS-2" } }), PLOT_CFG);
+  const mds = document.getElementById("mds"); mds.removeAllListeners?.("plotly_click");
+  mds.on("plotly_click", ev => {
+    const target = ev.points?.[0]?.customdata;
+    target && (location.href = cityHref(target));
+  });
+  const heat = document.getElementById("heat"); heat.removeAllListeners?.("plotly_click");
+  heat.on("plotly_click", ev => {
+    const row = ev.points?.[0]?.pointNumber?.[0];
+    row != null && (location.href = cityHref(d.slugs[P[row]]));
   });
 }
-document.getElementById("kind").onchange = e => drawDistances(e.target.value).catch(() => {});
+document.getElementById("kind").onchange = e => drawDistances(e.target.value)
+  .catch(err => showError(document.getElementById("heat"), "Unable to load distances: ", err));
 document.getElementById("order").onchange = renderDistances;
 document.getElementById("bigheat").onchange = renderDistances;
 
@@ -140,14 +166,22 @@ document.getElementById("bigheat").onchange = renderDistances;
 function drawScatter() {
   const xk = document.getElementById("xaxis").value, yk = document.getElementById("yaxis").value;
   const reg = document.getElementById("regionfilter").value;
-  const pts = reg ? CITIES.filter(c => c.region === reg) : CITIES;
+  let pts = reg ? CITIES.filter(c => c.region === reg) : CITIES;
+  const logx = document.getElementById("logx").checked, logy = document.getElementById("logy").checked;
+  const before = pts.length;
+  pts = pts.filter(c => Number.isFinite(metricValue(c, xk)) && Number.isFinite(metricValue(c, yk)) &&
+                           (!logx || metricValue(c, xk) > 0) && (!logy || metricValue(c, yk) > 0));
+  const notes = [];
+  before > pts.length && notes.push(`${before - pts.length} cities omitted for missing/nonpositive values`);
+  (xk === "grid_angle" || yk === "grid_angle") && notes.push("grid angle wraps at 90°; ordinary scatter does not show that circular adjacency");
+  document.getElementById("scatternote").textContent = notes.join(" · ");
   Plotly.react("scatter", [{ type: "scatter", mode: "markers+text",
-      x: pts.map(c => c[xk]), y: pts.map(c => c[yk]), text: pts.map(c => c.name),
+      x: pts.map(c => metricValue(c, xk)), y: pts.map(c => metricValue(c, yk)), text: pts.map(c => c.name),
       textposition: "top center", textfont: { size: 9 },
       marker: { size: 9, color: pts.map(c => regionColor(c.region)) },
-      hovertemplate: `%{text}<br>${METRICS[xk]}: %{x:.3f}<br>${METRICS[yk]}: %{y:.3f}<extra></extra>` }],
-    plotlyLayout({ xaxis: { title: METRICS[xk], type: document.getElementById("logx").checked ? "log" : "linear" },
-                   yaxis: { title: METRICS[yk], type: document.getElementById("logy").checked ? "log" : "linear" } }), PLOT_CFG);
+      hovertemplate: "%{text}: %{x:.3f}, %{y:.3f}<extra></extra>" }],
+    plotlyLayout({ xaxis: { title: METRICS[xk], type: logx ? "log" : "linear" },
+                   yaxis: { title: METRICS[yk], type: logy ? "log" : "linear" } }), PLOT_CFG);
 }
 document.getElementById("logx").onchange = drawScatter;
 document.getElementById("logy").onchange = drawScatter;
@@ -156,7 +190,7 @@ document.getElementById("logy").onchange = drawScatter;
 const PICKN = 3, OCOLORS = SERIES().slice(0, 3);   // fixed slots 1-3, never cycled
 async function drawOverlays() {
   const slugs = [...document.querySelectorAll("#citypick select")].map(s => s.value).filter(Boolean);
-  const reps = await Promise.all(slugs.map(s => api(`api/city/${s}.json`)));
+  const reps = await Promise.all(slugs.map(s => api(`api/city/${encodeURIComponent(s)}.json`)));
   const roses = [], elevs = [];
   reps.forEach((rep, i) => {
     // absolute √proportion per wedge (area-proportional; weights sum to 1 per city), so
@@ -164,32 +198,27 @@ async function drawOverlays() {
     const b = rep.marginals.bearing, rv = b.weights.map(Math.sqrt);
     // stepped OUTLINE instead of stacked bars: crisp closed contour per city — overlaid lines
     // stay readable where translucent fills turn to mud. Bidirectional mirror included.
-    const theta = [], r = [], share = [], n = rv.length, w = 180 / n;
+    const theta = [], r = [], n = rv.length, w = 180 / n;
     for (const half of [0, 180]) {
       for (let k = 0; k < n; k++) {
         const t0 = b.centers[k] - w / 2 + half, t1 = b.centers[k] + w / 2 + half;
-        theta.push(t0, t1); r.push(rv[k], rv[k]); share.push(100 * b.weights[k], 100 * b.weights[k]);
+        theta.push(t0, t1); r.push(rv[k], rv[k]);
       }
     }
-    theta.push(theta[0]); r.push(r[0]); share.push(share[0]);   // close the contour
+    theta.push(theta[0]); r.push(r[0]);   // close the contour
     roses.push({ type: "scatterpolar", mode: "lines", name: rep.meta.name,
-      theta, r, customdata: share,
-      hovertemplate: `${rep.meta.name}<br>bearing %{theta:.0f}° · %{customdata:.2f}% of length<extra></extra>`,
-      line: { color: OCOLORS[i], width: 2 },
+      theta, r, line: { color: OCOLORS[i], width: 2 },
       fill: "toself", fillcolor: OCOLORS[i] + "18" });
     const fe = rep.marginals.elevation_fine;
     const e = fe ?? rep.marginals.elevation;
     const centers = fe ? binCenters(fe.grade_edges_pct.concat([fe.grade_edges_pct[fe.grade_edges_pct.length-1]+5])) : binCenters(e.edges);
     elevs.push({ type: "scatter", mode: "lines+markers", name: rep.meta.name,
-      x: centers, y: e.weights, customdata: e.weights.map(w => 100 * w),
-      hovertemplate: `${rep.meta.name}<br>grade %{x:.0f}% · %{customdata:.2f}% of length<extra></extra>`,
-      line: { shape: "hvh", color: OCOLORS[i] } });
+      x: centers, y: e.weights, line: { shape: "hvh", color: OCOLORS[i] } });
   });
   const FEATS = [["Sidewalks", "sidewalk_share"], ["Bike infra", "bike_share"],
                  ["Transit lane", "transit_share"], ["Alleys", "alley_share"]];
   const charTraces = reps.map((rep, i) => ({ type: "bar", name: rep.meta.name,
     x: FEATS.map(f => f[0]), y: FEATS.map(f => 100 * (rep.scalars[f[1]] ?? 0)),
-    hovertemplate: `${rep.meta.name}<br>%{x}: %{y:.1f}% of street length<extra></extra>`,
     marker: { color: OCOLORS[i] } }));
   Plotly.react("ochar", charTraces, plotlyLayout({ barmode: "group", showlegend: true,
     yaxis: { title: "% of street length", ticksuffix: "%" } }), PLOT_CFG);
@@ -205,13 +234,11 @@ api("api/cities.json").then(d => {
   // axis pickers
   for (const [id, def] of [["xaxis", "hilliness"], ["yaxis", "entropy2d"]]) {
     const sel = document.getElementById(id);
-    Object.entries(METRICS).forEach(([k, label]) =>
-      sel.insertAdjacentHTML("beforeend", `<option value="${k}" ${k === def ? "selected" : ""}>${label}</option>`));
+    Object.entries(METRICS).forEach(([k, label]) => addOption(sel, k, label, k === def));
     sel.onchange = drawScatter;
   }
   const rf = document.getElementById("regionfilter");
-  [...new Set(CITIES.map(c => c.region))].sort().forEach(r =>
-    rf.insertAdjacentHTML("beforeend", `<option value="${r}">${r}</option>`));
+  [...new Set(CITIES.map(c => c.region))].sort().forEach(r => addOption(rf, r));
   rf.onchange = drawScatter;
   drawScatter();
   // overlay pickers (default: two most interesting contrasts present in data)
@@ -219,16 +246,14 @@ api("api/cities.json").then(d => {
   const prefer = ["pittsburgh", "san_francisco", "chicago"];
   for (let i = 0; i < PICKN; i++) {
     const sel = document.createElement("select");
-    sel.insertAdjacentHTML("beforeend", "<option value=''>—</option>");
-    CITIES.forEach(c => sel.insertAdjacentHTML("beforeend",
-      `<option value="${c.slug}" ${c.slug === prefer[i] ? "selected" : ""}>${c.name}</option>`));
+    addOption(sel, "", "—");
+    CITIES.forEach(c => addOption(sel, c.slug, c.name, c.slug === prefer[i]));
     sel.onchange = drawOverlays;
     pick.appendChild(sel);
   }
   drawOverlays().catch(() => {});
-  drawDistances("sphere").catch(e =>
-    document.getElementById("heat").innerHTML = `<p class="muted">No distances yet: ${e.message}</p>`);
-});
+  drawDistances("sphere").catch(e => showError(document.getElementById("heat"), "No distances yet: ", e));
+}).catch(e => showError(document.querySelector("main"), "Unable to load cities: ", e));
 </script>
 </body>
 </html>
