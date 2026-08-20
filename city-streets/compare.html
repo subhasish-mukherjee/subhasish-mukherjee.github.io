@@ -6,6 +6,7 @@
 <title>City Streets — compare</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="js/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>.overlay-panels { display: grid; gap: 18px; }</style>
 </head>
 <body>
 <header>
@@ -14,7 +15,6 @@
   <nav><a href="./">Cities</a><a href="gallery.html">Gallery</a><a href="compare.html" class="active">Compare</a><a href="about.html">About</a></nav>
 </header>
 <main>
-  <h2>Study areas as measures — Wasserstein distances <a class="muted" href="about.html#distances">(?)</a></h2>
   <p class="muted">The sphere distance compares street-direction measures on ℝP²
     <em>modulo rotation about the vertical axis</em> — grids match however they are oriented.
     The 3D W₂ alignment searches the most promising rotation candidates (see the method note).
@@ -35,14 +35,12 @@
     </select></label>
   <div class="grid" id="distgrid">
     <div class="panel"><b>Distance heatmap</b>
-      <span class="muted">ordered so structure is visible — near-diagonal blocks are families of
-        similar cities; click a heatmap cell or MDS point to open the city.</span>
       <div id="heat" class="plot" style="height:600px"></div></div>
     <div class="panel"><b>MDS embedding</b> <span class="muted">(color = region)</span>
       <div id="mds" class="plot" style="height:600px"></div></div>
   </div>
 
-  <h2>Metric scatter — pick any two axes <a class="muted" href="about.html#glossary">(?)</a></h2>
+  <h2>Scatter plot <a class="muted" href="about.html#glossary">(?)</a></h2>
   <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px">
     <label class="muted">x <select id="xaxis"></select></label>
     <label class="muted">y <select id="yaxis"></select></label>
@@ -56,19 +54,18 @@
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>;
     availability varies by location.</p>
 
-  <h2>Overlay study areas</h2>
-  <p class="muted">Select up to 3 study areas to superimpose their bearing roses and elevation-angle
-    distributions.</p>
+  <h2>Overlay cities</h2>
+  <p class="muted">Select up to three cities to compare their bearing roses and grade distributions.</p>
   <div id="citypick" style="display:flex; gap:8px; margin-bottom:8px"></div>
-  <div class="panel"><b>Street character (overlaid)</b>
-    <div class="muted">feature share of street length per selected city — the character
-      comparison.</div>
-    <div id="ochar" class="plot"></div></div>
-  <div class="grid">
-    <div class="panel"><b>Bearing roses (overlaid)</b> <span class="muted">— absolute
-      √proportions (each city's weights sum to 1): outline size directly compares
-      directional concentration</span><div id="oroses" class="plot"></div></div>
-    <div class="panel"><b>Elevation-angle marginals (overlaid)</b><div id="oelev" class="plot"></div></div>
+  <div class="overlay-panels">
+    <div class="panel"><b>Street character (overlaid)</b>
+      <div class="muted">Feature share of street length by city.</div>
+      <div id="ochar" class="plot"></div></div>
+    <div class="grid">
+      <div class="panel"><b>Bearing roses (overlaid)</b> <span class="muted">— absolute
+        √proportions; outline size shows directional concentration</span><div id="oroses" class="plot"></div></div>
+      <div class="panel"><b>Elevation-angle marginals (overlaid)</b><div id="oelev" class="plot"></div></div>
+    </div>
   </div>
 </main>
 <script src="js/common.js"></script>

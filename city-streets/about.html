@@ -33,36 +33,26 @@
 </header>
 <main>
   <h2>What this is</h2>
-  <p class="muted">Most measures here are computed from OpenStreetMap street networks and a
-  global elevation model; population and land-area labels come from the project registry, and
-  optional Walk Score®, Bike Score®, and Transit Score® values come from Walk Score. The
-  unifying idea is that a study area's streets define a <em>probability measure
-  over directions in 3D</em>, and the order of the street plan, the shape of the terrain, and
-  many network characteristics are properties of that measure and the network it comes from.
-  Methodology extends Boeing, <em>"Urban spatial order: street network orientation,
-  configuration, and entropy,"</em> Applied Network Science 4:67 (2019). The current release
-  contains 133 study areas; the five New York City boroughs are labeled explicitly as study
-  areas rather than presented as separate cities. A missing value (—) means unavailable or
-  inapplicable, not zero. See the <a href="#glossary">complete metric glossary</a> for every
-  scalar available in Compare.</p>
+  <p class="muted">Most metrics use OpenStreetMap networks and a global elevation model.
+  Registry data supplies population and land area; Walk Score supplies optional Walk Score®,
+  Bike Score®, and Transit Score® values. The central model treats each study area's streets as
+  a <em>probability measure over directions in 3D</em>. The method extends Boeing,
+  <em>"Urban spatial order: street network orientation, configuration, and entropy,"</em>
+  Applied Network Science 4:67 (2019). This release covers 133 study areas, including five
+  explicitly labeled New York City boroughs. A missing value (—) means unavailable or
+  inapplicable, not zero. The <a href="#glossary">metric glossary</a> defines every Compare axis.</p>
 
   <section id="window">
-    <h2>What area is analyzed (the comparison window)</h2>
+    <h2>Analyzed area</h2>
     <p>Most cities are fetched as a disc around the registered center (default 6 km, grown to
-    cover registered neighborhoods); selected cities use municipal boundaries. Comparing raw
-    extents would mix downtowns with suburbs,
-    so analysis is restricted to the <b>urban core</b>: intersections are counted on a 400 m
-    grid, cells under 25 intersections/km² are dropped (a deliberately permissive threshold —
-    proper city fabric like Pittsburgh's North Side stays; genuine low-density fringe goes),
-    and the mask is the connected dense region around the center. Sparse cells ringed by dense
-    fabric (≥4 of 8 neighbors) are <em>bridged</em>, so rivers, parks, and rail yards don't
-    sever the city. The <b>region map</b> on each city page shows exactly this: shaded cells =
-    analyzed core, outer ring = fetch disc when a disc window is used, small circles =
-    neighborhoods. The same density
-    rule is used everywhere, but boundary and disc inputs are not perfectly interchangeable:
-    raw counts and area-normalized measures remain sensitive to the selected extent. The
-    dashboard therefore labels every city's input window and favors street-length-normalized
-    comparisons where possible.</p>
+    cover registered neighborhoods); selected cities use municipal boundaries. Analysis is
+    restricted to the <b>urban core</b>. Intersections are counted on a 400 m grid, cells below
+    25 intersections/km² are dropped, and the connected dense region around the center is kept.
+    Sparse cells surrounded by dense fabric (at least 4 of 8 neighbors) are bridged across rivers,
+    parks, and rail yards. On the region map, shading marks the analyzed core, the ring marks a
+    disc window, and circles mark neighborhoods. The same density rule is used everywhere, but
+    disc and boundary inputs are not interchangeable; raw counts and area-normalized metrics
+    remain sensitive to extent.</p>
   </section>
 
   <section id="rose">
@@ -86,7 +76,7 @@
   </section>
 
   <section id="sphere">
-    <h2>The direction measure on the sphere (and why the band)</h2>
+    <h2>Direction measure on the sphere</h2>
     <p>The 3D extension: each segment's full direction — bearing <em>and</em> grade angle — is
     a unit vector <code>d = (cos g sin b, cos g cos b, sin g)</code>. Reversing the street
     negates it, so directions live on the projective plane ℝP² = S²/{±1}: each study area is an
@@ -120,28 +110,21 @@
 
   <section id="curviness">
     <h2>Curviness (turn rate) &amp; road-chain length</h2>
-    <p>Circuity says a road wanders; <b>turn rate</b> says how sharply. Chains are maximal
-    paths through street-degree-2 nodes of the whole network — the <em>same-road</em>
-    definition: it heals OSM way-splits (a road chopped at every speed-limit change keeps its
-    turns) and breaks at intersections (a dogleg at a 4-way is a routing maneuver, not road
-    curvature). Ramps (<code>highway=*_link</code>) and roundabouts are excluded as junction
-    infrastructure. Turn rate = degrees of mid-road turning per 100 m of road: platted grids
-    sit near 0, while roads with frequent bends or switchbacks score higher. <b>curvy share</b> = fraction of length on
-    chains (≥100 m) turning ≥15°/100 m. <b>Mean road-chain length</b> is the average maximal
-    chain through degree-2 nodes; it resembles block length but is not a cadastral block measure.
-    (Resampling finer than OSM's own shape
-    points would add nothing — between points the road is recorded straight.)</p>
+    <p>Circuity measures how far a road wanders; <b>turn rate</b> measures how sharply it bends.
+    Road chains are maximal paths through degree-2 nodes. They join OSM way splits but stop at
+    intersections; ramps (<code>highway=*_link</code>) and roundabouts are excluded. Turn rate is
+    the degrees of mid-road turning per 100 m. <b>Curvy share</b> is the fraction of length on
+    chains at least 100 m long that turn at least 15°/100 m. <b>Mean road-chain length</b> is the
+    average maximal chain length, not a cadastral block measure.</p>
   </section>
 
   <section id="hilliness">
     <h2>Hilliness</h2>
-    <p>Per-segment grade = rise/run from a 30 m-class elevation model (AWS terrarium tiles),
-    with hygiene: bridges/tunnels excluded (the model sees terrain, not the roadway), segments
-    shorter than a pixel (~15 m) excluded, implausible values (&gt;60%) dropped.
+    <p>Per-segment grade is rise/run from a 30 m-class elevation model (AWS terrarium tiles).
+    Bridges, tunnels, segments shorter than about 15 m, and grades over 60% are excluded.
     <b>hilly %</b> = length-weighted mean |grade|; <b>&gt;8% len</b> = share of length steeper
-    than 8%; each city page shows the full distribution as the <b>hill fan</b> (inclination
-    wedges shown at 3× angular exaggeration, with the true grade on the ticks) and the
-    elevation-angle marginal.</p>
+    than 8%. City pages show a <b>hill fan</b> at 3× angular exaggeration and the grade
+    distribution.</p>
   </section>
 
   <section id="walk">
@@ -151,21 +134,12 @@
     way-level step count is distributed over that way's full length, so splitting the OSM way
     into several segments does not multiply the staircase's rise.
     <b>walk hilly %</b> is the mean |grade| a pedestrian faces, staircases included.</p>
-    <p><b>Counting staircases honestly:</b> a "staircase" is a <em>connected component</em> of
-    steps segments — one staircase split into several OSM ways counts once. Cities also differ
-    in what they map: some places record many short entrance flights, while others emphasize
-    long municipal stairway-streets. A <b>major
-    staircase</b> is a component ≥30 m — the civic stairway-street phenomenon, not an entrance
-    flight. The same ≥30 m rule is applied on every continent.</p>
-    <p><b>Comparing across cities.</b> Raw counts are the most direct ranking, while turning a
-    count into a <em>density</em> needs care, because the
-    analyzed window differs by extent (see below): a per-<b>km²</b> figure divides by area, so a
-    boundary city measured over its whole footprint (Pittsburgh, 131 km²) looks far sparser than
-    a disc city measured over just its dense 6 km core (Valparaíso, 38 km²) — an artifact, not a
-    real gap. We therefore headline <b>major stairs / km of walkable street</b>, which normalizes
-    by the pedestrian fabric itself and stays comparable across disc and boundary cities; the
-    area-based per-km² figure remains on each city page, flagged as extent-sensitive. Coverage
-    caveat: some regions (e.g. South Asia) rarely tag steps at all.</p>
+    <p>A <b>staircase</b> is a connected component of step segments, so one staircase split among
+    several OSM ways counts once. A <b>major staircase</b> has at least 30 m of mapped stair length;
+    the same rule applies everywhere.</p>
+    <p>Raw and area-based counts depend on the analyzed extent. <b>Major stairs / km of walkable
+    street</b> is the primary comparable rate; major stairs/km² remains available but is marked
+    extent-sensitive. Step mapping also varies by region.</p>
   </section>
 
   <section id="network">
@@ -212,13 +186,9 @@
     (lane count from the <code>lanes</code> tag, else 2). Both the <code>parking:&lt;side&gt;</code>
     and older <code>parking:lane:&lt;side&gt;</code> schemes are read; <b>both-side</b> /
     <b>one-side</b> shares are the mapped-street length parked on two / one sides.</p>
-    <p><b>The big caveat — this is covered-only and gated.</b> OSM parking mapping is wildly
-    uneven across study areas. So the figure is computed <em>only</em> over mapped streets, and shown only
-    where at least 30 km of street is tagged — an absolute sample-size rule that does not treat
-    a low percentage in a large network as automatically unusable. Everywhere the
-    <b>mapping coverage</b> is shown alongside: a value resting on 25%
-    of a city's streets is far more trustworthy than one resting on 1%. Cities below the floor
-    are left blank rather than guessed.</p>
+    <p>OSM parking coverage varies widely. The estimate uses only mapped streets and appears only
+    when at least 30 km of street has parking tags. <b>Mapping coverage</b> is shown alongside it;
+    estimates below the 30 km threshold are left blank.</p>
   </section>
 
   <section id="parks">
@@ -229,50 +199,35 @@
     <code>nature_reserve</code>, <code>common</code>, <code>dog_park</code>,
     <code>garden</code>, and <code>landuse=recreation_ground</code> / <code>village_green</code>.
     The metric does not independently verify public access.</p>
-    <p><b>It is measured as a raster union, not a sum of polygon areas.</b> Parks overlap
-    constantly in OSM — a pitch inside a park inside a nature reserve, the same green mapped
-    both as a way and as a relation member — so adding areas up double-counts badly. Instead the
-    ground is rasterized at 20 m and every cell is counted once, however many polygons cover it.
-    Multipolygon holes (a lake or stadium carved out of a park) are subtracted per feature
-    before the union, so a hole in one park can still be filled by the park next to it. The
-    raster is a subdivision of the same grid the <a href="#window">urban core</a> area is measured
-    on, so the share is a ratio of two commensurable numbers.</p>
-    <p><b>Definition matters more than measurement here</b>, so the alternative is shown too.
-    The headline number counts land a resident would call a park. A second figure, <b>all green
-    space</b>, additionally counts sports pitches, playgrounds, golf courses, forest, meadow and
-    amenity grass — green, but not necessarily publicly accessible (much <code>landuse=grass</code>
-    is a highway verge). Where the two diverge, the definition is doing the work, and you can
-    see it rather than having to trust it. Both are clipped to the analyzed core, so a large
-    park straddling the edge contributes only the part inside.</p>
-    <p>This measures the selected OSM tags, not a complete land-use inventory. Unmapped or
-    differently tagged parks and green spaces are missed, and the 20 m raster limits spatial
-    precision.</p>
+    <p>Park area is a 20 m raster union, so overlapping polygons count once. Multipolygon holes
+    are removed before the union. The raster uses the same grid as the
+    <a href="#window">urban core</a> and is clipped to it.</p>
+    <p><b>All green space</b> also includes sports pitches, playgrounds, golf courses, forest,
+    meadow, and amenity grass. Neither measure guarantees public access or captures unmapped or
+    differently tagged land, and the 20 m raster limits precision.</p>
   </section>
 
   <section id="traffic">
     <h2>Traffic proxy (betweenness)</h2>
-    <p>The project does not have a globally consistent source of observed street-level traffic
-    volumes, so it uses sampled <em>betweenness centrality</em> on the routing graph — how many
-    sampled shortest paths cross each street — as a through-traffic proxy. Weighting the
-    direction measure by it asks "which way does modeled through-traffic point?" It is a model,
-    not a measurement, clipping to a disc window can bias it
-    toward the center, and it can be toggled off everywhere.</p>
+    <p>No globally consistent observed street-level traffic source is used. Sampled
+    <em>betweenness centrality</em> counts how many sampled shortest paths cross each street and
+    serves as a through-traffic proxy. It is modeled, not observed, and disc clipping can bias it
+    toward the center.</p>
   </section>
 
   <section id="klvsw">
-    <h2>Why Wasserstein and not KL divergence?</h2>
+    <h2>Wasserstein and Jensen–Shannon</h2>
     <p>Raw KL divergence is unsuitable for direction measures: asymmetric, <em>infinite</em>
     whenever one study area has mass in a bin the other leaves empty, and geometry-blind — it
     does not know that two neighboring direction bins are close. Wasserstein is
     built on the sphere's metric, so nearby directions cost little — which is what "similar
-    street plans" should mean. The repaired form of KL — <b>Jensen–Shannon divergence</b>
-    (symmetric, finite, ∈[0,1]), minimized over rotations — is the "JS divergence" option: it
-    measures <em>overlap</em>, a deliberately different question from the <em>work to
-    morph</em>. High JS + low W₂ = different exact directions, similar overall shape.</p>
+    street plans" should mean. <b>Jensen–Shannon divergence</b> is symmetric, finite, and
+    rotation-aligned here. It measures bin overlap rather than geometric transport. High JS with
+    low W₂ means different exact directions but similar overall shape.</p>
   </section>
 
   <section id="distances">
-    <h2>Study-area similarity: the distances</h2>
+    <h2>Similarity distances</h2>
     <ul>
       <li><b>sphere W₂ — 3D</b>: full street-plan shape (bearing × grade), Sinkhorn-computed on
         a 36×9 coarsening. Rotation alignment is approximate for speed: bearing W₁ ranks the
@@ -308,7 +263,7 @@
   </section>
 
   <section id="glossary">
-    <h2>Complete metric glossary</h2>
+    <h2>Metric glossary</h2>
     <p>This glossary covers all 42 scalar axes offered in Compare. Unless a definition says
     otherwise, network metrics use the analyzed urban core. Length shares use street-segment
     length as their weight. Compare displays stored fractions as percentages; a missing value

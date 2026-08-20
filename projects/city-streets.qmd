@@ -1,34 +1,28 @@
 ---
 title: "City Streets"
-description: "Street networks as probability measures on ℝP², with 3D orientation entropy, city similarity, hilliness, walkability, and staircase censuses."
+description: "Comparing street-network orientation, terrain, and city similarity with probability measures on ℝP²."
 date: 2026-07-23
 ---
 
-The question behind this project is how much one can learn about a city just by
-looking at its streets. The starting point is
+City Streets asks how much a street network reveals about a city. It extends
 [Geoff Boeing](https://geoffboeing.com/)'s work on
-[urban street network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/),
-which measures how close a city is to a grid by the entropy of its street
-bearings.
+[street-network orientation](https://geoffboeing.com/2019/09/urban-street-network-orientation/)
+from compass bearings to three-dimensional directions.
 
-City Streets extends this to three dimensions. Crossing compass bearing with
-grade, each city's street network defines a probability measure on
-$\mathbb{RP}^2$. From these measures I compute Wasserstein and Jensen–Shannon
-distances between cities, taken modulo rotation about the vertical axis, so that
-two cities laid out alike but oriented differently are recognized as similar.
-The same data gives comparable measures of hilliness, walkability, on-street
-parking, and staircase streets across cities worldwide.
-The current release compares 133 study areas, including all five New York City boroughs as
-explicitly labeled study areas.
+Combining bearing and grade makes each network a probability measure on
+$\mathbb{RP}^2$. Wasserstein and Jensen–Shannon distances compare these measures
+modulo vertical-axis rotation, so similarly built cities match regardless of grid
+orientation. The project also compares hilliness, walkability, on-street parking,
+and staircases. This release covers 133 study areas, including all five explicitly
+labeled New York City boroughs.
 
 **[Open the interactive dashboard](/city-streets/)**
 
 The dashboard includes:
 
-- A sortable master table of key measures, with 42 scalar metrics available in Compare
+- A sortable table of key measures and 42 Compare metrics
 - Per-city pages with the direction measure on the sphere, bearing roses, hill
   fans, street-character breakdowns, and a map of the analyzed urban core
 - A distance heatmap and MDS embedding, showing which cities are built alike up
   to rotation
-- A staircase census computed by union-find connected components, with a 30 m
-  minimum length rule applied identically on every continent
+- A connected-component staircase census with a consistent 30 m minimum length

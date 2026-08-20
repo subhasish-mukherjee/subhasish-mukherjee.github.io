@@ -19,49 +19,43 @@
   <div class="grid">
     <div class="panel"><b>Direction measure on the sphere</b>
       <label class="muted" style="float:right"><input type="checkbox" id="extrude"> 3D rose (extrude √weight)</label>
-      <div class="muted">Each tile is a (bearing × grade) bin; band spans grades 0–50%
-        (<a href="about.html#sphere">why?</a>). Antipodal tiles mirrored; ring = flat (equator).</div>
+      <div class="muted">Bearing × grade bins for grades 0–50%. Antipodal tiles are mirrored;
+        the ring is flat. <a href="about.html#sphere">Method</a>.</div>
       <div id="sphere" class="plot" style="height:420px"></div></div>
     <div class="panel"><b>Unrolled: bearing × grade heatmap</b>
-      <div class="muted">the same measure flattened — rows are grade bands (top band = ≥ cap).</div>
+      <div class="muted">The same measure flattened; rows are grade bands and the top band includes
+        values above the cap.</div>
       <div id="unrolled" class="plot"></div></div>
     <div class="panel"><b>Bearing measure (projected to the circle)</b>
-      <div class="muted">grade-marginalized axial bearings: 36 five-degree bins on 0–180°,
-        mirrored for display (<a href="about.html#rose">?</a>).</div>
+      <div class="muted">Grade-marginalized axial bearings, mirrored for display.
+        <a href="about.html#rose">Method</a>.</div>
       <div id="rose" class="plot"></div></div>
     <div class="panel"><b>Hill fan — street inclination rose</b>
-      <div class="muted">grade-derived inclination shown at ×3 exaggeration: 0% lies flat;
-        steeper grades fan upward; radius is peak-normalized
-        (<a href="about.html#hilliness">?</a>).</div>
+      <div class="muted">Inclination at 3× exaggeration; radius is peak-normalized.
+        <a href="about.html#hilliness">Method</a>.</div>
       <div id="elev" class="plot"></div></div>
     <div class="panel"><b>Grade distribution (log)</b>
-      <div class="muted">the fan unrolled: share of street length by grade %, log y — small
-        differences among flat cities show as vertical offsets.</div>
+      <div class="muted">Street-length share by grade; logarithmic y-axis.</div>
       <div id="elevdist" class="plot"></div></div>
     <div class="panel"><b>Street character</b>
-      <div class="muted">full breakdown, colored per attribute: lane counts, sidewalk &amp; cycleway
-        provision (among tagged roads), transit-lane share of drive length, and walk-network
-        alley length relative to drive length.</div>
+      <div class="muted">OSM-tagged lane counts and sidewalk, bike, transit-lane, and alley shares.</div>
       <div id="attrs" class="plot" style="height:300px"></div>
       <div id="parkingline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
     <div class="panel"><b>Most similar cities</b>
-      <div class="muted">nearest by each Wasserstein distance (<a href="about.html#distances">?</a>).</div>
+      <div class="muted">Nearest by each Wasserstein distance.
+        <a href="about.html#distances">Method</a>.</div>
       <div id="neighbors" style="padding-top:8px"></div></div>
   </div>
   <h2>Analyzed region</h2>
   <div class="grid">
     <div class="panel"><b>What this analysis covers</b>
-      <div class="muted">shaded cells = the density-derived urban core actually analyzed
-        (for boundary-extent cities this is the city limits minus low-density areas);
-        ring = fetch disc (disc-extent cities only); small circles = neighborhoods.</div>
+      <div class="muted">Shading = analyzed urban core; ring = fetch disc; circles = neighborhoods.</div>
       <div id="region" class="plot" style="height:440px"></div>
       <div id="parksline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
   </div>
   <div id="nbsection" style="display:none">
     <h2>Neighborhoods</h2>
-    <p class="muted">The same measures at neighborhood scale — how differently the roads can
-      feel within one city. Add a neighborhood with one line in
-      <code>data/neighborhoods.toml</code>.</p>
+    <p class="muted">The same measures at neighborhood scale.</p>
     <div class="roses" id="nbcards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:14px"></div>
     <table id="nbtable"><thead></thead><tbody></tbody></table>
   </div>
