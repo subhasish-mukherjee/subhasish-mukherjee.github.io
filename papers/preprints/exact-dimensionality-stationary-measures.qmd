@@ -1,0 +1,23 @@
+---
+title: "Exact dimensionality of stationary measures for nonuniformly conformally contracting random diffeomorphisms"
+subtitle: "Preprint · arXiv:2609.10538"
+date: "2026-09-09"
+categories: [Dynamical Systems, Ergodic Theory, Dimension Theory]
+---
+
+**Subhasish Mukherjee.** "Exact dimensionality of stationary measures for
+nonuniformly conformally contracting random diffeomorphisms." Preprint, 2026.
+
+[arXiv:2609.10538](https://arxiv.org/abs/2609.10538) ·
+[PDF](https://arxiv.org/pdf/2609.10538)
+
+## Abstract
+
+We prove exact dimensionality of ergodic stationary measures for random $C^1$
+diffeomorphisms in the single negative Lyapunov scale setting. Let $\nu$ be a
+Borel probability measure on $\operatorname{Diff}^1(M)$ satisfying a logarithmic
+$C^1$ moment condition, and let $\mu$ be a $\nu$-stationary ergodic probability
+measure. If $\lambda_{\mathrm{top}} = \lambda_{\mathrm{bot}} = \lambda < 0$,
+then $\mu$ is exact dimensional and
+$\dim(\mu) = h_\mu^{\mathrm{F}}(\nu)/(-\lambda)$. No discreteness assumption is
+imposed on the driving measure.
