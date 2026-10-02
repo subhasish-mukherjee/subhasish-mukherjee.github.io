@@ -28,7 +28,7 @@ being in Chicago is that the
 <div class="gallery">
   <div class="leatherwork-gallery" data-gallery-mode="featured"
        data-gallery-url="images/leatherwork/gallery.json"
-       data-empty-message="Three featured leatherwork photos will appear here soon."></div>
+       data-empty-message="Featured leatherwork photos will appear here soon."></div>
 </div>
 
 [Browse the full leatherwork gallery](leatherwork.qmd){.gallery-link}

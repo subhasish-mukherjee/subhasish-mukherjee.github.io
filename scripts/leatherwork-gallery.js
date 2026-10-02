@@ -35,9 +35,12 @@
 
       const manifest = await response.json();
       const photos = Array.isArray(manifest.photos) ? manifest.photos : [];
+      // Newest first by "YYYY-MM-DD" date; undated photos go last, ties keep manifest order.
+      const sorted = [...photos].sort((a, b) =>
+        (b.date || "").localeCompare(a.date || ""));
       const selected = mode === "featured"
-        ? photos.filter((photo) => photo.featured).slice(0, 3)
-        : photos;
+        ? sorted.filter((photo) => photo.featured).slice(0, 6)
+        : sorted;
 
       if (selected.length === 0) {
         const empty = document.createElement("p");

@@ -2,7 +2,7 @@
 
 Put all leatherwork images in [`photos/`](photos/), then list them in
 [`gallery.json`](gallery.json). The gallery automatically uses that file in two
-places: the three featured images on the Other Interests & Projects page and
+places: the six featured images on the Other Interests & Projects page and
 the full [Leatherwork Gallery](../../leatherwork.qmd).
 
 Use the following shape for every photo in `gallery.json`:
@@ -10,14 +10,18 @@ Use the following shape for every photo in `gallery.json`:
 ```json
 {
   "src": "images/leatherwork/photos/01-bifold-wallet.jpg",
+  "date": "2026-09-17",
   "caption": "Bifold wallet in natural vegetable-tanned leather.",
   "featured": true
 }
 ```
 
 - `src` is required and must match the image's filename exactly.
+- `date` is the day the photo was taken, as `YYYY-MM-DD`. Both galleries are
+  sorted newest first; photos on the same day keep their order in the file, and
+  photos without a date go last.
 - `caption` is optional. Omit it when the image does not need one.
-- Set `featured` to `true` on exactly three photos. Those appear first on the
+- Set `featured` to `true` on exactly six photos. Those appear on the
   Other Interests & Projects page; every photo appears in the full gallery.
 
 Keep the entries inside the `"photos"` array, separated by commas. Add roughly

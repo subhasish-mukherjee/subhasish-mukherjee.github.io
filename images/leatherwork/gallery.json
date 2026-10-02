@@ -1,46 +1,92 @@
 {
   "photos": [
     {
-      "src": "images/leatherwork/photos/belt_featured.jpg",
+      "src": "images/leatherwork/photos/PXL_20260917_145550516.PORTRAIT.ORIGINAL.jpg",
+      "date": "2026-09-17"
+    },
+    {
+      "src": "images/leatherwork/photos/featured_1.jpg",
+      "date": "2026-09-17",
       "featured": true
     },
     {
-      "src": "images/leatherwork/photos/wallet-featured.jpg",
+      "src": "images/leatherwork/photos/featured_2.jpg",
+      "date": "2026-09-17",
       "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260917_145438725.PORTRAIT.ORIGINAL.jpg",
+      "date": "2026-09-17"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260917_145254417.PORTRAIT.jpg",
+      "date": "2026-09-17"
+    },
+    {
+      "src": "images/leatherwork/photos/dopp_kit_featured.jpg",
+      "date": "2026-09-17",
+      "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/belt_featured.jpg",
+      "date": "2026-09-12",
+      "featured": true
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260912_160924125.PORTRAIT.jpg",
+      "date": "2026-09-12"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260103_145732672.PORTRAIT.jpg",
+      "date": "2026-01-03"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20260103_145507917.jpg",
+      "date": "2026-01-03"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20251217_144134507.jpg",
+      "date": "2025-12-17"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20251217_144044226.jpg",
+      "date": "2025-12-17"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250327_162342895.jpg",
+      "date": "2025-03-27"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250320_225725082.jpg",
+      "date": "2025-03-20"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20250320_225715718.jpg",
+      "date": "2025-03-20"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20241218_041900504.jpg",
+      "date": "2024-12-18"
+    },
+    {
+      "src": "images/leatherwork/photos/PXL_20241217_234136539.jpg",
+      "date": "2024-12-17"
     },
     {
       "src": "images/leatherwork/photos/laptop-case-featured.jpg",
+      "date": "2024-08-12",
       "featured": true
     },
     {
-      "src": "images/leatherwork/photos/PXL_20240812_180151064.jpg"
+      "src": "images/leatherwork/photos/PXL_20240812_180151064.jpg",
+      "date": "2024-08-12"
     },
     {
-      "src": "images/leatherwork/photos/PXL_20241217_234136539.jpg"
+      "src": "images/leatherwork/photos/belt_black.jpg"
     },
     {
-      "src": "images/leatherwork/photos/PXL_20241218_041900504.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20250320_225715718.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20250320_225725082.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20250327_162342895.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20251217_144044226.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20251217_144134507.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20260103_145507917.jpg"
-    },
-    {
-      "src": "images/leatherwork/photos/PXL_20260103_145732672.PORTRAIT.jpg"
+      "src": "images/leatherwork/photos/featured_3.jpg",
+      "featured": true
     }
   ]
 }
