@@ -40,6 +40,20 @@
       <div id="mds" class="plot" style="height:600px"></div></div>
   </div>
 
+  <h2>Most and least similar pairs</h2>
+  <p class="muted">Every pair of cities ranked by the selected distance (rank 1 = most similar).
+    Filter by city to rank only the pairs that include it; sort by any column.</p>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px">
+    <label class="muted">show <select id="pairshow">
+      <option value="most">30 most similar</option>
+      <option value="least">30 least similar</option>
+      <option value="all">all pairs</option>
+    </select></label>
+    <label class="muted">city <input id="pairq" type="search" placeholder="filter by city…" style="background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:5px 9px"></label>
+  </div>
+  <p class="muted" id="pairnote" aria-live="polite"></p>
+  <div style="overflow:auto; max-height:640px"><table id="pairs"><thead></thead><tbody></tbody></table></div>
+
   <h2>Scatter plot <a class="muted" href="about.html#glossary">(?)</a></h2>
   <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px">
     <label class="muted">x <select id="xaxis"></select></label>
@@ -54,7 +68,7 @@
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>;
     availability varies by location.</p>
 
-  <h2>Overlay cities</h2>
+  <h2 id="overlays">Overlay cities</h2>
   <p class="muted">Select up to three cities to compare their bearing roses and grade distributions.</p>
   <div id="citypick" style="display:flex; gap:8px; margin-bottom:8px"></div>
   <div class="overlay-panels">
@@ -101,7 +115,9 @@ async function drawDistances(kind) {
   const next = await api(`api/distances/${encodeURIComponent(kind)}.json`);
   if (request !== distanceRequest) return; // a slower previous selection cannot win the race
   DIST = next;
+  PAIRS = rankPairs(next);
   renderDistances();
+  renderPairs();
 }
 function renderDistances() {
   const d = DIST; if (!d) return;
@@ -151,6 +167,52 @@ function renderDistances() {
 document.getElementById("kind").onchange = e => drawDistances(e.target.value)
   .catch(err => showError(document.getElementById("heat"), "Unable to load distances: ", err));
 document.getElementById("order").onchange = renderDistances;
+
+// --- ranked city pairs (follow the selected distance) ---
+const PAIRN = 30;
+let PAIRS = [];   // every unordered pair of the current matrix; rank 1 = smallest distance
+function rankPairs(d) {
+  const pairs = [];
+  for (let i = 0; i < d.slugs.length; i++)
+    for (let j = i + 1; j < d.slugs.length; j++)
+      pairs.push({ i, j, a: d.labels[i], b: d.labels[j], distance: d.matrix[i][j] });
+  pairs.sort((x, y) => x.distance - y.distance).forEach((p, k) => p.rank = k + 1);
+  return pairs;
+}
+// accent- and case-insensitive, so "sao" finds São Paulo
+const fold = s => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+const PAIR_COLS = [
+  { k: "pair", t: "City pair", s: r => `${r.a} ↔ ${r.b}`,
+    cell: r => `<a href="${cityHref(DIST.slugs[r.i])}">${escapeHTML(r.a)}</a> ↔ ` +
+               `<a href="${cityHref(DIST.slugs[r.j])}">${escapeHTML(r.b)}</a>` },
+  { k: "rank", t: "rank", tip: "rank among all pairs under the selected distance (1 = most similar)",
+    d: 0, s: r => r.rank },
+  { k: "distance", t: "distance", tip: "normalized to [0, 1]; see About → Similarity distances",
+    d: 3, s: r => r.distance },
+  { k: "overlay", t: "", tip: "overlay this pair's roses and grade distributions below",
+    s: r => r.rank, cell: r => `<button type="button" style="padding:1px 8px"
+      data-a="${escapeHTML(DIST.slugs[r.i])}" data-b="${escapeHTML(DIST.slugs[r.j])}">overlay</button>` },
+];
+function renderPairs() {
+  if (!DIST) return;
+  const mode = document.getElementById("pairshow").value;
+  const q = fold(document.getElementById("pairq").value.trim());
+  const pool = q ? PAIRS.filter(p => fold(p.a).includes(q) || fold(p.b).includes(q)) : PAIRS;
+  const rows = mode === "most" ? pool.slice(0, PAIRN) : mode === "least" ? pool.slice(-PAIRN) : pool;
+  document.getElementById("pairnote").textContent = `${rows.length.toLocaleString()} of ` +
+    `${pool.length.toLocaleString()} pairs` + (q ? " matching the city filter" : "");
+  sortableTable(document.getElementById("pairs"), PAIR_COLS, rows,
+    { sortKey: "rank", asc: mode !== "least" });   // least-similar view leads with the farthest pair
+}
+document.getElementById("pairshow").onchange = renderPairs;
+document.getElementById("pairq").oninput = renderPairs;
+document.getElementById("pairs").addEventListener("click", ev => {
+  const btn = ev.target.closest("button[data-a]"); if (!btn) return;
+  const picks = document.querySelectorAll("#citypick select");
+  [btn.dataset.a, btn.dataset.b, ""].forEach((slug, k) => picks[k] && (picks[k].value = slug));
+  drawOverlays().catch(() => {});
+  document.getElementById("overlays").scrollIntoView({ behavior: "smooth" });
+});
 
 // --- scalar scatter with axis pickers ---
 function drawScatter() {
