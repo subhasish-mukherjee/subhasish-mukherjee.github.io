@@ -85,19 +85,20 @@
 <script src="js/common.js"></script>
 <script>
 const METRICS = {
-  phi: "φ order", entropy2d: "H₂D entropy", spherical_entropy: "H sphere",
+  phi: "φ order (whole area)", phi_local: "local φ (2 km tiles)", entropy2d: "H₂D entropy (whole area)",
+  entropy_local: "local H₂D (2 km tiles)", spherical_entropy: "H sphere",
   vertical_fraction: "vertical energy (%)", sphericity: "sphericity", grid_angle: "grid angle °",
   hilliness: "hilliness %", steep8: ">8% length (%)", walk_hilliness: "walk hilliness %",
-  steps_per_km: "staircases / km", major_stairs: "major staircases (count)", major_stairs_per_km_street: "major stairs / km street", major_stairs_per_km2: "major stairs / km² (extent-sensitive)", mean_stair_m: "mean staircase length (m)", circuity: "OSM-way circuity", turn_rate: "turn rate °/100m",
+  steps_per_km: "staircases / km", major_stairs: "major staircases (count; scales with area)", major_stairs_per_km_street: "major stairs / km street", major_stairs_per_km2: "major stairs / km²", mean_stair_m: "mean staircase length (m)", circuity: "OSM-way circuity", turn_rate: "turn rate °/100m",
   four_way: "4-way intersections (%)", mean_block_m: "mean road-chain length (m)",
   signals_per_km2: "traffic signals / km²", signals_per_intersection: "signals / intersection",
-  oneway_share: "one-way share (%)", bridge_share: "bridge share (%)", walkscore: "Walk Score®", bikescore: "Bike Score®", transitscore: "Transit Score®", population: "population (approx.)", pop_density: "pop density (per city km²)", core_area_km2: "analyzed core area (km²)",
+  oneway_share: "one-way share (%)", bridge_share: "bridge share (%)", walkscore: "Walk Score®", bikescore: "Bike Score®", transitscore: "Transit Score®", population: "population (approx.)", pop_density: "pop density (per city km²)", core_area_km2: "analyzed core area (km²; descriptive)",
   land_km2: "city land area (km²)",
   intersection_density: "intersections / km²", street_km_per_km2: "street km / km²",
   sidewalk_share: "OSM-mapped sidewalk share (%)", bike_share: "OSM-mapped bike provision (%)", transit_share: "OSM-mapped transit-lane share (%)", alley_share: "OSM-mapped alley / drive length (%)", mean_lanes: "mean lanes/road",
   parking_asphalt_share: "on-street parking (% of asphalt, where mapped)", parking_coverage: "parking mapping coverage (%)",
-  park_share: "parkland share of analyzed land (%)", park_km2: "parkland (km²)",
-  green_share: "all green space share (%)", green_km2: "all green space (km²)",
+  park_share: "parkland share of analyzed land (%)", park_km2: "parkland (km²; scales with area)",
+  green_share: "all green space share (%)", green_km2: "all green space (km²; scales with area)",
 };
 const FRACTION_METRICS = new Set(["vertical_fraction", "steep8", "four_way", "oneway_share",
   "bridge_share", "sidewalk_share", "bike_share", "transit_share", "alley_share",

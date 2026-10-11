@@ -49,7 +49,8 @@
   <h2>Analyzed region</h2>
   <div class="grid">
     <div class="panel"><b>What this analysis covers</b>
-      <div class="muted">Shading = analyzed urban core; ring = fetch disc; circles = neighborhoods.</div>
+      <div class="muted" id="regionnote">Shading = analyzed urban core; light shading = connector cells
+        (crossed, not analyzed); outline = study window; circles = neighborhoods.</div>
       <div id="region" class="plot" style="height:440px"></div>
       <div id="parksline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
   </div>
@@ -305,8 +306,8 @@ async function drawNeighborhoodCards(enabled) {
   } catch (e) { /* no neighborhoods defined for this city */ }
 }
 
-// Region map (scattermap + MapLibre carto-positron, tokenless): urban-core mask as one GeoJSON
-// fill layer, fetch disc + neighborhood circles as one null-separated lines trace.
+// Region map (scattermap + MapLibre carto-positron, tokenless): urban-core and connector masks as
+// GeoJSON fill layers, study-window outline + neighborhood circles as one null-separated trace.
 async function drawRegionMap(rep) {
   const core = rep.meta.core;
   const center = [Number(rep.meta.lat), Number(rep.meta.lon)];
@@ -323,7 +324,15 @@ async function drawRegionMap(rep) {
     rings.push({ name, lons, lats });
   }
   const isBoundary = rep.meta.extent === "boundary";
-  if (!isBoundary) circleRing("fetch disc", center[0], center[1], radius);
+  const win = rep.meta.window;
+  if (win && Array.isArray(win.outline)) {
+    // the exact study window: city limits (holes included), clipped as analyzed
+    const label = win.kind === "box" ? "download window" : (rep.meta.boundary_label ?? "city limits");
+    win.outline.forEach(ring => rings.push({ name: label, lons: ring.map(p => Number(p[0])),
+                                             lats: ring.map(p => Number(p[1])) }));
+  } else if (!isBoundary) {
+    circleRing("fetch disc", center[0], center[1], radius);
+  }
   NBS.forEach(nb => circleRing(nb.name, Number(nb.lat), Number(nb.lon), Number(nb.radius_m)));
 
   const trace = { type: "scattermap", mode: "lines",
@@ -339,30 +348,46 @@ async function drawRegionMap(rep) {
     const lonOf = k => lon0 + k * c / mLon0, latOf = k => lat0 + k * c / M_PER_LAT;
     // Merge horizontally adjacent cells into runs before handing them to MapLibre. The shape
     // is identical, but a 3,000-cell core usually becomes only a few hundred rectangles.
-    const rows = new Map();
-    core.cells.forEach(([ix, iy]) => { if (!rows.has(iy)) rows.set(iy, []); rows.get(iy).push(ix); });
-    const polys = [];
-    for (const [iy, xs] of rows) {
-      xs.sort((a, b) => a - b);
-      let start = xs[0], previous = xs[0];
-      const addRun = (lo, hi) => polys.push([[
-        [lonOf(lo), latOf(iy)], [lonOf(hi + 1), latOf(iy)],
-        [lonOf(hi + 1), latOf(iy + 1)], [lonOf(lo), latOf(iy + 1)],
-        [lonOf(lo), latOf(iy)]]]);
-      for (const ix of xs.slice(1)) {
-        if (ix === previous + 1) { previous = ix; continue; }
-        addRun(start, previous); start = previous = ix;
+    const cellPolys = cells => {
+      const rows = new Map();
+      cells.forEach(([ix, iy]) => { if (!rows.has(iy)) rows.set(iy, []); rows.get(iy).push(ix); });
+      const polys = [];
+      for (const [iy, xs] of rows) {
+        xs.sort((a, b) => a - b);
+        let start = xs[0], previous = xs[0];
+        const addRun = (lo, hi) => polys.push([[
+          [lonOf(lo), latOf(iy)], [lonOf(hi + 1), latOf(iy)],
+          [lonOf(hi + 1), latOf(iy + 1)], [lonOf(lo), latOf(iy + 1)],
+          [lonOf(lo), latOf(iy)]]]);
+        for (const ix of xs.slice(1)) {
+          if (ix === previous + 1) { previous = ix; continue; }
+          addRun(start, previous); start = previous = ix;
+        }
+        addRun(start, previous);
       }
-      addRun(start, previous);
-    }
-    layers.push({ sourcetype: "geojson", type: "fill", color: seriesMain(), opacity: 0.22,
-      source: { type: "Feature", geometry: { type: "MultiPolygon", coordinates: polys } } });
+      return polys;
+    };
+    const fill = (cells, opacity) => cells.length && layers.push({ sourcetype: "geojson", type: "fill",
+      color: seriesMain(), opacity,
+      source: { type: "Feature", geometry: { type: "MultiPolygon", coordinates: cellPolys(cells) } } });
+    fill(core.cells, 0.22);
+    fill(core.connector_cells ?? [], 0.07);
   }
-  const zoom = Math.log2(40075016.686 * Math.cos(center[0] * Math.PI / 180) * 420 /
-                         (512 * 2 * radius)) - 0.2;
+  // Frame the study window (city limits can be over 100 km across).
+  let view = { lat: center[0], lon: center[1], span: 2 * radius };
+  const pts = rings.filter(r => r.name !== undefined && !NBS.some(nb => nb.name === r.name))
+                   .flatMap(r => r.lons.map((lon, i) => [lon, r.lats[i]]));
+  if (pts.length) {
+    const lons = pts.map(p => p[0]), lats = pts.map(p => p[1]);
+    const [x0, x1, y0, y1] = [Math.min(...lons), Math.max(...lons), Math.min(...lats), Math.max(...lats)];
+    view = { lat: (y0 + y1) / 2, lon: (x0 + x1) / 2,
+             span: Math.max((x1 - x0) * mPerLon((y0 + y1) / 2), (y1 - y0) * M_PER_LAT) };
+  }
+  const zoom = Math.log2(40075016.686 * Math.cos(view.lat * Math.PI / 180) * 420 /
+                         (512 * view.span)) - 0.2;
   const layout = plotlyLayout({ showlegend: false, margin: { l: 0, r: 0, t: 0, b: 0 },
     map: { style: isDark() ? "carto-darkmatter" : "carto-positron",
-           center: { lat: center[0], lon: center[1] }, zoom, layers } });
+           center: { lat: view.lat, lon: view.lon }, zoom, layers } });
   try {
     await Plotly.newPlot("region", [trace], layout, PLOT_CFG);
   } catch (e) {   // remote style unreachable → plain background, overlays still drawn
@@ -395,7 +420,8 @@ cityRequest.then(rep => {
   document.title = `City Streets — ${rep.meta.name}`;
   const s = rep.scalars;
   document.getElementById("kpi").innerHTML = [
-    ["φ order", fmt(s.phi, 3)], ["H sphere", fmt(s.spherical_entropy, 3)],
+    ["φ order", fmt(s.phi, 3)], ["local φ (2 km)", fmt(s.phi_local, 3)],
+    ["H sphere", fmt(s.spherical_entropy, 3)],
     ["hilliness %", fmt(s.hilliness.score, 2)], [">8% grade", pct(s.hilliness.frac_steeper_8pct)],
     ["vertical %", pct(s.vertical_fraction, 2)], ["grid θ°", fmt(s.grid_angle, 1)],
     ["walk hilly %", fmt(rep.walk.hilliness_score, 2)], ["major stairs", fmt(rep.walk.major_stairs, 0)],
@@ -403,6 +429,11 @@ cityRequest.then(rep => {
     ["signals/km²", fmt(s.signals_per_km2, 1)], ["road-chain m", fmt(s.mean_block_m, 0)],
     ["pop/km²", fmt(s.pop_density, 0)], ["core km²", fmt(rep.meta.area_km2, 0)],
   ].map(([k, v]) => `<div><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  const studyArea = rep.meta.boundary_label ?? rep.meta.window?.label;
+  if (studyArea) {
+    const note = document.getElementById("regionnote");
+    if (note) note.insertAdjacentHTML("afterbegin", `<b>Study area:</b> ${escapeHTML(studyArea)}. `);
+  }
   drawSphere(); drawUnrolled(rep); drawRose(rep); drawElev(rep); drawElevDist(rep); drawAttrs(rep);
   drawNeighbors().then(hasNbs => drawNeighborhoodCards(hasNbs))
     .then(() => drawRegionMap(rep))   // map needs NBS for circles

@@ -46,15 +46,37 @@
 
   <section id="window">
     <h2>Analyzed area</h2>
-    <p>Most cities are fetched as a disc around the registered center (default 6 km, grown to
-    cover registered neighborhoods); selected cities use municipal boundaries. Analysis is
-    restricted to the <b>urban core</b>. Intersections are counted on a 400 m grid, cells below
-    25 intersections/km² are dropped, and the connected dense region around the center is kept.
-    Sparse cells surrounded by dense fabric (at least 4 of 8 neighbors) are bridged across rivers,
-    parks, and rail yards. On the region map, shading marks the analyzed core, the ring marks a
-    disc window, and circles mark neighborhoods. The same density rule is used everywhere, but
-    disc and boundary inputs are not interchangeable; raw counts and area-normalized metrics
-    remain sensitive to extent.</p>
+    <p><b>Study window.</b> Every study area is its city limits, clipped exactly to the
+    OpenStreetMap boundary polygon; enclaves such as Hamtramck inside Detroit are excluded. Where
+    the municipality is not what people mean by the city, the window is a documented union of
+    official units. Examples: Tokyo's 23 special wards, Greater London, Beijing's six central
+    districts, central Shanghai, Sydney's Eastern City District, Copenhagen with its enclave
+    Frederiksberg, Ottawa with Gatineau, Cairo with Giza, and Las Vegas with the unincorporated
+    towns that hold the Strip. The city page names each choice. Province-sized units, such as
+    Kinshasa or Giza's desert, are clipped to 60 km from the center, beyond the reach of any
+    urban core.</p>
+    <p><b>Water is not land.</b> Open water is removed from every cell: the sea, from OSM's
+    coastline-derived land polygons, and lakes, rivers, reservoirs, and docks, from OSM water
+    areas. It is rasterized at 50 m. A harbor or bay inside the city limits is therefore not
+    analyzed area.</p>
+    <p><b>Urban core.</b> Intersections inside the window are counted on a 400 m grid. Cells
+    below 25 intersections per km² <em>of land</em> are dropped, and the connected dense region
+    around the center is kept. A cell cut by the city limits or a shoreline is judged by its
+    land part. Sparse cells surrounded by dense fabric (at least 4 of 8 neighbors) are
+    <em>connectors</em>: they join the two sides of a park or rail yard but are not analyzed
+    land. Dense fabric across open water up to 3 km wide is joined the same way, such as
+    Istanbul's Asian shore across the Bosphorus or Kowloon across Victoria Harbour. The water
+    becomes a connector, and only bridges and tunnels over it are kept. On the region map,
+    shading marks the analyzed core, light shading marks connectors, the outline marks the study
+    window, and circles mark neighborhoods.</p>
+    <p><b>Comparing areas of different size.</b> Analyzed cores range from about 14 km² (Cambridge,
+    MA) to 1,230 km² (Cairo with Giza). Core area counts only land inside the window, so densities are not diluted by
+    the city edge or by water. Intersection degrees and road chains are read from the unclipped
+    network, so the cut cannot create false dead ends or short "blocks". Shares, grades, and
+    per-km² and per-km rates are intensive and compare across sizes. Whole-area φ and H₂D are
+    not: pooling many local grids flattens the rose, so for non-grid cities they fall as the
+    area grows. <b>Local φ</b> (2 km tiles) is the size-robust companion. Raw counts (major
+    staircases, park km², core area) scale with area and are descriptive only.</p>
   </section>
 
   <section id="rose">
@@ -213,8 +235,10 @@
     <h2>Traffic proxy (betweenness)</h2>
     <p>No globally consistent observed street-level traffic source is used. Sampled
     <em>betweenness centrality</em> counts how many sampled shortest paths cross each street and
-    serves as a through-traffic proxy. It is modeled, not observed, and disc clipping can bias it
-    toward the center.</p>
+    serves as a through-traffic proxy. It is modeled, not observed. It runs on the drivable
+    network of the whole study window plus the margin downloaded around it, so streets near the
+    city limits keep their through-routes. It is not size-neutral, though: a larger city allows
+    longer trips, which concentrate on arterials.</p>
   </section>
 
   <section id="klvsw">
@@ -258,16 +282,15 @@
     <h2>Neighborhoods</h2>
     <p>The release has 32 registered circular neighborhoods across 6 study areas. Each is sliced
     from its study area's cached drive and walk networks and receives a rose, φ, turn rate,
-    hilliness, staircase measures, mobility shares, and Walk Score® fields when available. A
-    disc study area's fetch radius grows when necessary to contain its registered neighborhoods;
-    a boundary study area remains limited to its fetched boundary. Neighborhood values use the
+    hilliness, staircase measures, mobility shares, and Walk Score® fields when available.
+    Neighborhood values use the
     neighborhood circle rather than the city's urban-core mask and should be compared at that
     smaller scale.</p>
   </section>
 
   <section id="glossary">
     <h2>Metric glossary</h2>
-    <p>This glossary covers all 42 scalar axes offered in Compare. Unless a definition says
+    <p>This glossary covers all 44 scalar axes offered in Compare. Unless a definition says
     otherwise, network metrics use the analyzed urban core. Length shares use street-segment
     length as their weight. Compare displays stored fractions as percentages; a missing value
     is omitted rather than treated as zero.</p>
@@ -282,7 +305,18 @@
       <dt data-metric="entropy2d">H₂D entropy</dt>
       <dd>Shannon entropy, in natural-log units, of the length-weighted bidirectional street
       bearings in 36 full-compass bins of 10°. The ideal-grid reference is ln 4 and the uniform
-      upper bound is ln 36.</dd>
+      upper bound is ln 36. Computed over the whole study area, so it rises with area for
+      cities whose local grids point different ways.</dd>
+
+      <dt data-metric="phi_local">Local φ (2 km tiles)</dt>
+      <dd>φ computed separately in each 2 km × 2 km tile of the core grid (tiles with at least
+      2 km of street), then averaged with street-length weights. It asks how ordered a typical
+      neighborhood-sized patch is. Unlike whole-area φ, it does not fall just because a larger
+      study area pools more differently oriented grids. Pittsburgh's whole-city φ is 0.02, but
+      its patches average about 0.34.</dd>
+
+      <dt data-metric="entropy_local">Local H₂D (2 km tiles)</dt>
+      <dd>H₂D computed in the same 2 km tiles and averaged with street-length weights.</dd>
 
       <dt data-metric="spherical_entropy">H sphere</dt>
       <dd>Shannon entropy of the length-weighted bearing × absolute-grade measure after
@@ -329,15 +363,16 @@
       <dt data-metric="major_stairs">Major staircases (count)</dt>
       <dd>Number of connected staircase components with at least 30 m of mapped stair length.
       Connected components prevent one staircase split across several OSM ways from being
-      counted several times.</dd>
+      counted several times. A raw count: it grows with study-area size, so compare the
+      per-km or per-km² rates across cities.</dd>
 
       <dt data-metric="major_stairs_per_km_street">Major stairs / km street</dt>
       <dd>Major-staircase count divided by the same walk-network street-length denominator used
       for staircases / km. This is the preferred fabric-normalized staircase rate.</dd>
 
       <dt data-metric="major_stairs_per_km2">Major stairs / km²</dt>
-      <dd>Major-staircase count divided by analyzed-core area. It is extent-sensitive because
-      disc and boundary inputs can cover different kinds of windows.</dd>
+      <dd>Major-staircase count divided by analyzed-core area (the in-window share of dense
+      cells).</dd>
 
       <dt data-metric="mean_stair_m">Mean staircase length (m)</dt>
       <dd>Mean total mapped length of all connected staircase components, including both minor
@@ -358,11 +393,14 @@
 
       <dt data-metric="four_way">Four-way intersections (%)</dt>
       <dd>Share of analyzed street nodes with degree other than 2 whose undirected street degree
-      is exactly 4. The denominator also includes dead ends and other non-shape nodes.</dd>
+      is exactly 4. The denominator also includes dead ends and other non-shape nodes. Degrees
+      come from the unclipped network, so streets leaving the study area still count.</dd>
 
       <dt data-metric="mean_block_m">Mean road-chain length (m)</dt>
       <dd>Mean length of the same maximal degree-2 chains used for turn rate. It is a network
-      chain measure that resembles block length, not a cadastral block measurement.</dd>
+      chain measure that resembles block length, not a cadastral block measurement. Chains are
+      traced on the unclipped network; one cut by the study-area edge counts as the fraction
+      of a chain lying inside, at its true length.</dd>
 
       <dt data-metric="signals_per_km2">Traffic signals / km²</dt>
       <dd>Count of OSM nodes tagged <code>highway=traffic_signals</code> inside the analyzed core,
@@ -397,16 +435,18 @@
       nonmissing responses. Availability can differ from the other two scores.</dd>
 
       <dt data-metric="population">Population (approx.)</dt>
-      <dd>Approximate registry population for the named administrative or borough unit. This is
-      contextual metadata, not computed from the analyzed network.</dd>
+      <dd>Approximate registry population for the same unit as the study window (for a union,
+      the union's total; blank where no verified figure exists). This is contextual metadata,
+      not computed from the analyzed network.</dd>
 
       <dt data-metric="pop_density">Population density (per city km²)</dt>
       <dd>Registry population divided by its paired registry land area. It is not divided by the
       modeled urban-core area.</dd>
 
       <dt data-metric="core_area_km2">Analyzed core area (km²)</dt>
-      <dd>Number of retained 400 m × 400 m urban-core cells multiplied by 0.16 km². It is the
-      denominator for core-area density metrics.</dd>
+      <dd>Sum over dense core cells of 0.16 km² times the share of each cell that is land inside
+      the study window. Connector cells and open water are excluded. It is the denominator for core-area density metrics
+      and is itself descriptive: it reflects how large the city is.</dd>
 
       <dt data-metric="land_km2">City land area (km²)</dt>
       <dd>Approximate registry land area paired with the registry population for the same unit;
@@ -457,7 +497,11 @@
 
       <dt data-metric="park_share">Parkland share of analyzed land (%)</dt>
       <dd>Park km² divided by analyzed-core area. Selected OSM park-like polygons are unioned on
-      a 20 m raster so overlaps count once; public access is not independently verified.</dd>
+      a 20 m raster so overlaps count once; public access is not independently verified. A
+      polygon over 1 km² whose interior is more street-dense than 1.1 times the city's median
+      core density is treated as a legal or administrative overlay, not open space. Santiago's
+      104 km² "Humedal Urbano Río Mapocho" designation is the main case; real parks with
+      internal drives stay well below that bar.</dd>
 
       <dt data-metric="park_km2">Parkland (km²)</dt>
       <dd>Raster-union area inside the analyzed core of the selected OSM park, nature-reserve,
