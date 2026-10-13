@@ -74,13 +74,16 @@ const binCenters = edges => edges.slice(0, -1).map((lo, i) => (lo + edges[i + 1]
 
 // Sortable table: render `rows` into `tableEl` given column specs
 // [{k, t, tip?, d?, s: row=>value, cell?: row=>html}]; click headers to sort. Returns render().
+// `nullsLast` keeps missing values at the bottom in both directions.
 function sortableTable(tableEl, cols, rows, { sortKey = cols[0].k, asc = false,
-                                              filter = null, onRender = null } = {}) {
+                                              filter = null, onRender = null,
+                                              nullsLast = false } = {}) {
   function render() {
     const col = cols.find(c => c.k === sortKey);
     const shown = filter ? rows.filter(filter) : rows;
     const sorted = [...shown].sort((a, b) => {
       let x = col.s(a), y = col.s(b);
+      if (nullsLast && (x == null || y == null)) return (x == null) - (y == null);
       if (typeof x === "string") return asc ? x.localeCompare(y) : y.localeCompare(x);
       x = x ?? -Infinity; y = y ?? -Infinity;
       return asc ? x - y : y - x;

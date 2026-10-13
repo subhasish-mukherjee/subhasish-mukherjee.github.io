@@ -35,6 +35,38 @@ def json_slugs(directory: Path) -> set[str]:
     return {path.stem for path in directory.glob("*.json")}
 
 
+# Official commute modal share: record field -> flat key in cities.json (percent, 0-100).
+COMMUTE_FIELDS = (("walk_share", "commute_walk"), ("bike_share", "commute_bike"),
+                  ("transit_share", "commute_transit"), ("car_share", "commute_car"),
+                  ("work_from_home_share", "commute_wfh"))
+COMMUTE_SHARES = ("walk_share", "bike_share", "transit_share", "car_share",
+                  "work_from_home_share", "other_share")
+COMMUTE_TEXT = ("country", "period", "geography_name", "geography_type", "source_agency",
+                "source_dataset", "source_label", "source_url")
+
+
+def is_percent(value) -> bool:
+    """None (not published) or a real number in [0, 100]; bools are not numbers here."""
+    return value is None or (not isinstance(value, bool) and isinstance(value, (int, float))
+                             and math.isfinite(value) and 0 <= value <= 100)
+
+
+def check_commute(slug: str, record: dict, sources: dict) -> None:
+    assert record.get("city_id") == slug, f"commute record keyed {slug} names another city"
+    for key in COMMUTE_TEXT:
+        assert isinstance(record.get(key), str) and record[key], f"{slug}: commute {key} missing"
+    assert record["source_url"].startswith("https://"), f"{slug}: commute source is not https"
+    assert record.get("source_id") in sources, f"{slug}: commute record cites an unknown source"
+    assert record.get("basis") in ("all_workers", "commuters_only", "multi_response")
+    values = [record.get(key) for key in COMMUTE_SHARES]
+    assert all(is_percent(v) for v in values), f"{slug}: commute share outside 0-100"
+    present = [v for v in values if v is not None]
+    if record["basis"] != "multi_response":
+        assert sum(present) <= 100.5, f"{slug}: commute shares exceed 100%"
+        if record.get("other_share") is not None:
+            assert abs(sum(present) - 100) <= 0.5, f"{slug}: commute shares do not sum to 100%"
+
+
 def main() -> int:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else "city-streets").resolve()
     api = root / "api"
@@ -61,9 +93,23 @@ def main() -> int:
     roses = load(api / "roses.json")
     assert {row["slug"] for row in roses} == active, "rose roster does not match cities.json"
 
+    commute = load(api / "commute.json")
+    commute_records = commute["cities"]
+    assert set(commute_records) <= active, "commute record for a city not in cities.json"
+    for slug, record in commute_records.items():
+        check_commute(slug, record, commute["sources"])
+    unavailable = commute.get("unavailable", {})
+    assert set(unavailable) <= active, "commute reason for a city not in cities.json"
+    assert not set(unavailable) & set(commute_records), "city both with and without commute data"
+    assert all(isinstance(e.get("reason"), str) and e["reason"] for e in unavailable.values())
+
     for row in cities:
         if row.get("region") != "north_america":
             assert row.get("walkscore") is None, f"unsupported Walk Score exported for {row['slug']}"
+        record = commute_records.get(row["slug"])
+        for field, key in COMMUTE_FIELDS:
+            expected = None if record is None else record[field]
+            assert row.get(key) == expected, f"{row['slug']}: {key} differs from commute.json"
         report = load(api / "city" / f"{row['slug']}.json")
         assert report["meta"]["slug"] == row["slug"], f"wrong report at {row['slug']}"
         assert report["meta"]["report_version"] >= 16, f"stale report at {row['slug']}"
@@ -89,7 +135,8 @@ def main() -> int:
                 assert math.isfinite(row[j]) and 0 <= row[j] <= 1 + 1e-9
                 assert math.isclose(row[j], matrix[j][i], abs_tol=1e-9), f"{kind}: asymmetric"
 
-    print(f"City Streets export valid: {len(active)} cities")
+    print(f"City Streets export valid: {len(active)} cities, "
+          f"{len(commute_records)} with commute modal share")
     return 0
 
 

@@ -20,10 +20,12 @@ labeled New York City boroughs.
 
 The dashboard includes:
 
-- A sortable table of key measures and 42 Compare metrics
+- A sortable table of key measures and 49 Compare metrics
 - Per-city pages with the direction measure on the sphere, bearing roses, hill
   fans, street-character breakdowns, and a map of the analyzed urban core
 - A distance heatmap and MDS embedding, showing which cities are built alike up
   to rotation
 - A ranked list of every city pair, from the most to the least similar
 - A connected-component staircase census with a consistent 30 m minimum length
+- Official commute modal shares (walk, bicycle, transit, car, work from home) from national
+  census and statistical agencies, each with its year, geography, and source

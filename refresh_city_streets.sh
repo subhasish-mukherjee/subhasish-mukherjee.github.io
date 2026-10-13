@@ -20,6 +20,9 @@ test -n "$JULIA_CMD" || {
 }
 
 "$JULIA_CMD" --project="$SOURCE_DIR" -e 'using Pkg; Pkg.test()'
+# Commute modal share: importer tests, and the committed dataset must rebuild from its extracts.
+python3 -m unittest discover -s "$SOURCE_DIR/scripts/modal_share"
+python3 "$SOURCE_DIR/scripts/modal_share/build.py" check
 "$JULIA_CMD" --project="$SOURCE_DIR" "$SOURCE_DIR/scripts/export_static.jl" "$SITE_DIR/city-streets"
 python3 "$SITE_DIR/scripts/validate_city_streets.py" "$SITE_DIR/city-streets"
 

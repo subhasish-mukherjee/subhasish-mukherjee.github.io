@@ -46,6 +46,13 @@
         <a href="about.html#distances">Method</a>.</div>
       <div id="neighbors" style="padding-top:8px"></div></div>
   </div>
+  <h2 id="commute">Commute modal share</h2>
+  <div class="panel">
+    <div class="muted">How residents usually get to work, from official census data for the
+      city's own statistical geography — not part of the street-network analysis.
+      <a href="about.html#commute">Sources &amp; definitions</a>.</div>
+    <div class="kpi" id="commutekpi"></div>
+    <div id="commuteline" class="muted" style="margin-top:6px; line-height:1.5"></div></div>
   <h2>Analyzed region</h2>
   <div class="grid">
     <div class="panel"><b>What this analysis covers</b>
@@ -69,6 +76,9 @@ const slug = new URLSearchParams(location.search).get("slug");
 const cityRequest = slug && /^[a-z0-9_]+$/.test(slug)
   ? api(`api/city/${encodeURIComponent(slug)}.json`)
   : Promise.reject(new Error("Choose a city from the city list."));
+// Official commute modal share is a separate dataset, loaded on its own so that a missing file
+// can never blank the street analysis.
+const commuteRequest = api("api/commute.json").catch(() => null);
 const gradePctOf = (iz, nz, zmax) =>
   (100 * Math.tan(Math.asin((iz + 0.5) * zmax / nz))).toFixed(0);
 
@@ -413,6 +423,41 @@ function drawParks(rep) {
       `${s.green_km2.toFixed(1)} km² (${pct(s.green_share, 1)}%)</span>` : "") +
     ` <a href="about.html#parks">?</a>`;
 }
+
+// Commute modal share: five percents of the source's workers ("—" = not published, never 0),
+// then one source line — period · official geography · agency · link — plus any caveats.
+const COMMUTE_KPIS = [["walk_share", "walk %"], ["bike_share", "bicycle %"],
+  ["transit_share", "transit %"], ["car_share", "car %"], ["work_from_home_share", "work from home %"]];
+const COMMUTE_CAVEATS = {
+  covid_restrictions: ["⚠ census during COVID-19 restrictions",
+    "Collected while COVID-19 restrictions were in force: working from home is inflated and transit depressed."],
+  commuters_only: ["excludes people working from home",
+    "Shares are of workers who travel to work; this source does not count people who work from home."],
+  multi_response: ["several modes per person",
+    "Respondents could report more than one mode, so the shares can add up to more than 100%."],
+};
+async function drawCommute() {
+  const data = await commuteRequest;
+  const kpi = document.getElementById("commutekpi"), line = document.getElementById("commuteline");
+  if (!kpi || !line) return;
+  const r = data?.cities && Object.hasOwn(data.cities, slug) ? data.cities[slug] : null;
+  if (!r) {
+    kpi.style.display = "none";
+    line.textContent = data ? "No official city-level commute statistic is available for this city."
+                            : "Commute data could not be loaded.";
+    return;
+  }
+  kpi.innerHTML = COMMUTE_KPIS.map(([f, k]) =>
+    `<div><div class="v">${fmt(r[f], 1)}</div><div class="k">${k}</div></div>`).join("");
+  const caveats = [...(r.flags ?? []), r.basis].filter(c => COMMUTE_CAVEATS[c])
+    .map(c => `<span title="${escapeHTML(COMMUTE_CAVEATS[c][1])}">${COMMUTE_CAVEATS[c][0]}</span>`);
+  r.special && caveats.push(escapeHTML(r.special));
+  r.notes && caveats.push(escapeHTML(r.notes));
+  line.innerHTML = [r.source_label, r.geography_name, r.source_agency].map(escapeHTML).join(" · ") +
+    ` · <a href="${escapeHTML(r.source_url)}" target="_blank" rel="noopener">source ↗</a>` +
+    (caveats.length ? `<br>${caveats.join(" · ")}` : "");
+}
+drawCommute();
 
 cityRequest.then(rep => {
   REP = rep;

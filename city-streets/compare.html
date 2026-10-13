@@ -6,7 +6,8 @@
 <title>City Streets — compare</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="js/plotly-2.35.2.min.js" charset="utf-8"></script>
-<style>.overlay-panels { display: grid; gap: 18px; }</style>
+<style>.overlay-panels { display: grid; gap: 18px; }
+#commutetable td:nth-child(n+7), #commutetable th:nth-child(n+7) { text-align: left; }</style>
 </head>
 <body>
 <header>
@@ -68,6 +69,15 @@
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>;
     availability varies by location.</p>
 
+  <h2 id="commute">Commute modal share</h2>
+  <p class="muted">How residents usually get to work, from official census and national
+    statistics — not part of the street-network analysis. Years, ages and definitions differ by
+    country, and figures use each agency's city geography; see
+    <a href="about.html#commute">sources &amp; definitions</a>. Sort by any column.</p>
+  <p class="muted" id="commutenote" aria-live="polite"></p>
+  <div style="overflow:auto; max-height:640px"><table id="commutetable"><thead></thead><tbody></tbody></table></div>
+  <p class="muted" id="commutecredit"></p>
+
   <h2 id="overlays">Overlay cities</h2>
   <p class="muted">Select up to three cities to compare their bearing roses and grade distributions.</p>
   <div id="citypick" style="display:flex; gap:8px; margin-bottom:8px"></div>
@@ -99,6 +109,9 @@ const METRICS = {
   parking_asphalt_share: "on-street parking (% of asphalt, where mapped)", parking_coverage: "parking mapping coverage (%)",
   park_share: "parkland share of analyzed land (%)", park_km2: "parkland (km²; scales with area)",
   green_share: "all green space share (%)", green_km2: "all green space (km²; scales with area)",
+  commute_walk: "walk commute (% of workers)", commute_bike: "bike commute (% of workers)",
+  commute_transit: "transit commute (% of workers)", commute_car: "car commute (% of workers)",
+  commute_wfh: "work from home (% of workers)",
 };
 const FRACTION_METRICS = new Set(["vertical_fraction", "steep8", "four_way", "oneway_share",
   "bridge_share", "sidewalk_share", "bike_share", "transit_share", "alley_share",
@@ -227,6 +240,7 @@ function drawScatter() {
   const notes = [];
   before > pts.length && notes.push(`${before - pts.length} cities omitted for missing/nonpositive values`);
   (xk === "grid_angle" || yk === "grid_angle") && notes.push("grid angle wraps at 90°; ordinary scatter does not show that circular adjacency");
+  (xk.startsWith("commute_") || yk.startsWith("commute_")) && notes.push("commute shares are official census figures whose years and definitions differ by country (see the commute table)");
   document.getElementById("scatternote").textContent = notes.join(" · ");
   Plotly.react("scatter", [{ type: "scatter", mode: "markers+text",
       x: pts.map(c => metricValue(c, xk)), y: pts.map(c => metricValue(c, yk)), text: pts.map(c => c.name),
@@ -282,14 +296,52 @@ async function drawOverlays() {
       yaxis: { title: "share", type: "log" }, showlegend: true }), PLOT_CFG);
 }
 
+// --- commute modal share: official census figures, kept apart from the street measures ---
+const COMMUTE_BASIS = { all_workers: "all workers", commuters_only: "commuters only",
+                        multi_response: "multi-response" };
+const COMMUTE_COLS = [
+  { k: "name", t: "City", s: r => r.name, cell: r => `<a href="${cityHref(r.slug)}">${escapeHTML(r.name)}</a>` },
+  { k: "walk", t: "walk %", d: 1, s: r => r.walk_share },
+  { k: "bike", t: "bike %", d: 1, s: r => r.bike_share },
+  { k: "transit", t: "transit %", d: 1, s: r => r.transit_share },
+  { k: "car", t: "car %", d: 1, s: r => r.car_share },
+  { k: "wfh", t: "WFH %", tip: "worked from home", d: 1, s: r => r.work_from_home_share },
+  { k: "period", t: "period", tip: "survey or census period; ⚠ = collected under COVID-19 restrictions",
+    s: r => r.period, cell: r => escapeHTML(r.period) + ((r.flags ?? []).includes("covid_restrictions")
+      ? ' <span title="collected while COVID-19 restrictions were in force">⚠</span>' : "") },
+  { k: "basis", t: "basis", tip: "all workers = includes people working from home (the ACS definition); commuters only = people who travel to work; multi-response = several modes per person allowed",
+    s: r => COMMUTE_BASIS[r.basis] ?? r.basis, cell: r => escapeHTML(COMMUTE_BASIS[r.basis] ?? r.basis) },
+  { k: "source", t: "source", s: r => r.source_agency,
+    cell: r => `<a href="${escapeHTML(r.source_url)}" target="_blank" rel="noopener">${escapeHTML(r.source_agency)}</a>` },
+];
+function drawCommuteTable(commute) {
+  const names = Object.fromEntries(CITIES.map(c => [c.slug, c.name]));
+  const rows = Object.values(commute?.cities ?? {}).filter(r => names[r.city_id])
+    .map(r => ({ ...r, slug: r.city_id, name: names[r.city_id] }));
+  document.getElementById("commutenote").textContent = commute
+    ? `${rows.length} of ${CITIES.length} cities have an official figure; the About page lists ` +
+      "the others and why."
+    : "Commute data could not be loaded.";
+  sortableTable(document.getElementById("commutetable"), COMMUTE_COLS, rows,
+    { sortKey: "walk", nullsLast: true });
+  const agencies = [...new Set(rows.map(r => r.source_agency))].sort();
+  document.getElementById("commutecredit").textContent = agencies.length
+    ? `Commute data adapted from official statistics of: ${agencies.join("; ")}. Licences are on the About page.`
+    : "";
+}
+
 api("api/cities.json").then(d => {
   CITIES = d.sort((a, b) => a.name.localeCompare(b.name));
-  // axis pickers
+  // axis pickers; the census commute shares sit in their own group, apart from street measures
   for (const [id, def] of [["xaxis", "hilliness"], ["yaxis", "entropy2d"]]) {
-    const sel = document.getElementById(id);
-    Object.entries(METRICS).forEach(([k, label]) => addOption(sel, k, label, k === def));
+    const sel = document.getElementById(id), census = document.createElement("optgroup");
+    census.label = "Commute modal share (census)";
+    Object.entries(METRICS).forEach(([k, label]) =>
+      addOption(k.startsWith("commute_") ? census : sel, k, label, k === def));
+    sel.appendChild(census);
     sel.onchange = drawScatter;
   }
+  api("api/commute.json").catch(() => null).then(drawCommuteTable);
   const rf = document.getElementById("regionfilter");
   [...new Set(CITIES.map(c => c.region))].sort().forEach(r => addOption(rf, r));
   rf.onchange = drawScatter;

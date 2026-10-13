@@ -23,6 +23,7 @@
     .metric-glossary dd { padding-top: 2px; }
   }
   h2 { margin-top: 26px; }
+  #commutesources th { cursor: default; text-align: left; white-space: normal; }
 </style>
 </head>
 <body>
@@ -35,7 +36,8 @@
   <h2>What this is</h2>
   <p class="muted">Most metrics use OpenStreetMap networks and a global elevation model.
   Registry data supplies population and land area; Walk Score supplies optional Walk Score®,
-  Bike Score®, and Transit Score® values. The central model treats each study area's streets as
+  Bike Score®, and Transit Score® values; national statistical agencies supply
+  <a href="#commute">commute modal shares</a>. The central model treats each study area's streets as
   a <em>probability measure over directions in 3D</em>. The method extends Boeing,
   <em>"Urban spatial order: street network orientation, configuration, and entropy,"</em>
   Applied Network Science 4:67 (2019). This release covers 133 study areas, including five
@@ -201,6 +203,40 @@
     <a href="https://www.walkscore.com/how-it-works/" target="_blank" rel="noopener">Walk Score</a>.</p>
   </section>
 
+  <section id="commute">
+    <h2>Commute modal share (official census data)</h2>
+    <p>A third family, separate from both of those: how a city's working residents usually get
+    to work, as published by national statistical agencies. These are census or survey answers
+    about people, not measurements of streets, and they use each agency's own geography for the
+    city rather than the analyzed urban core: a Census place, borough, or consolidated city in the
+    U.S., a census subdivision in Canada, a local authority in England, and so on. Where a study
+    area is a union of official units, for example Las Vegas with Paradise and Winchester,
+    Sydney's nine councils, or Ottawa with Gatineau, the units' counts are summed.</p>
+    <p><b>Five shares.</b> Walk, bicycle, public transit, car (driver or passenger, including vans
+    and trucks), and work from home, each a percentage of the source's workers. Taxi and
+    ride-hailing, motorcycles, and other modes make up the remainder. Where respondents report
+    several modes, a journey counts as transit if it uses any public transport, otherwise car,
+    otherwise bicycle; only "walked only" counts as walk. Answers of "not stated" or "did not go
+    to work" are left out. A mode a source does not publish appears as "—", never as zero.</p>
+    <p><b>Definitions differ.</b> U.S. figures pool five survey years (2020–2024) of workers aged
+    16 and over; most others come from a single census, with its own age floor and question
+    wording. Each figure has one of three bases. <i>All workers</i> follows the ACS definition and
+    includes people working from home. <i>Commuters only</i> sources count only people who travel
+    to work, which raises every other share. <i>Multi-response</i> sources let respondents name
+    several modes, so their shares can add up to more than 100%. A few tables also count
+    students travelling to school, or fold cycling or walking into a wider category; such
+    shares are left blank rather than estimated. Censuses taken under COVID-19 restrictions
+    carry a ⚠ flag: working from home is inflated and transit depressed compared with normal
+    years. Each city page names its source, period, geography, and basis, notes any such
+    exception, and links to the published table.</p>
+    <p class="muted" id="commutecoverage"></p>
+    <details id="commutemissing" style="display:none"><summary class="muted">Cities without an
+      official figure, and why</summary><ul class="muted" style="margin:6px 0"></ul></details>
+    <div style="overflow:auto"><table id="commutesources" style="font-size:13px"><thead><tr>
+      <th>Country</th><th>Agency and dataset</th><th>Period</th><th>Basis</th><th>Licence</th>
+    </tr></thead><tbody></tbody></table></div>
+  </section>
+
   <section id="parking">
     <h2>On-street parking (estimated)</h2>
     <p>Of the paved roadway on streets where parking <em>is mapped</em>, the estimated fraction
@@ -290,7 +326,7 @@
 
   <section id="glossary">
     <h2>Metric glossary</h2>
-    <p>This glossary covers all 44 scalar axes offered in Compare. Unless a definition says
+    <p>This glossary covers all 49 scalar axes offered in Compare. Unless a definition says
     otherwise, network metrics use the analyzed urban core. Length shares use street-segment
     length as their weight. Compare displays stored fractions as percentages; a missing value
     is omitted rather than treated as zero.</p>
@@ -453,6 +489,29 @@
       it may be unavailable and need not equal analyzed-core area.</dd>
     </dl>
 
+    <h3>Commute modal share (official census data)</h3>
+    <dl class="metric-glossary">
+      <dt data-metric="commute_walk">Walk commute (% of workers)</dt>
+      <dd>Share of the source's workers who usually walk to work, from the national statistical
+      agency's latest city figure (<a href="#commute">definitions</a>). Not derived from the
+      street network.</dd>
+
+      <dt data-metric="commute_bike">Bike commute (% of workers)</dt>
+      <dd>Share of the source's workers who usually cycle to work.</dd>
+
+      <dt data-metric="commute_transit">Transit commute (% of workers)</dt>
+      <dd>Share who usually take public transport (bus, rail, metro, tram, ferry), including
+      journeys that combine it with another mode.</dd>
+
+      <dt data-metric="commute_car">Car commute (% of workers)</dt>
+      <dd>Share who usually go by car, van, or truck, as driver or passenger; taxis and
+      motorcycles are excluded.</dd>
+
+      <dt data-metric="commute_wfh">Work from home (% of workers)</dt>
+      <dd>Share who mainly work at or from home. Blank for sources that count only people who
+      travel to work.</dd>
+    </dl>
+
     <h3>Network density and OSM-tagged infrastructure</h3>
     <dl class="metric-glossary">
       <dt data-metric="intersection_density">Intersections / km²</dt>
@@ -558,7 +617,51 @@
     is cached and incremental — adding a study area is one command, with runtime depending on
     its extent and the remote data services; this dashboard reads only precomputed JSON. Built
     in Julia.</p>
+    <p class="muted">Commute modal share: adapted from the official statistics listed under
+    <a href="#commute">commute modal share</a>, each used under the licence shown there. Figures
+    derived from Statistics Canada data (including summed census subdivisions) are adapted from
+    Statistics Canada, 2021 Census of Population; this does not constitute an endorsement by
+    Statistics Canada of this product. ONS data are licensed under the Open Government Licence
+    v3.0. The tables are processed offline into percentages; no agency endorses this site.</p>
   </section>
 </main>
+<script>
+// Commute coverage and sources, read from the published dataset (built with DOM text nodes only).
+Promise.all([fetch("api/commute.json").then(r => r.json()), fetch("api/cities.json").then(r => r.json())])
+  .then(([commute, cities]) => {
+    const recs = Object.values(commute.cities ?? {});
+    const covered = new Set(recs.map(r => r.city_id));
+    document.getElementById("commutecoverage").textContent =
+      `${covered.size} of ${cities.length} study areas have an official figure.`;
+    const reasons = commute.unavailable ?? {};
+    const missing = cities.filter(c => !covered.has(c.slug)).sort((a, b) => a.name.localeCompare(b.name));
+    if (missing.length) {
+      const box = document.getElementById("commutemissing"), list = box.querySelector("ul");
+      for (const c of missing) {
+        const li = document.createElement("li"), b = document.createElement("b");
+        b.textContent = c.name;
+        li.append(b, ` — ${reasons[c.slug]?.reason ?? "no official figure in this release."}`);
+        list.appendChild(li);
+      }
+      box.style.display = "";
+    }
+    const basis = { all_workers: "all workers", commuters_only: "commuters only",
+                    multi_response: "multi-response" };
+    const body = document.querySelector("#commutesources tbody");
+    for (const src of Object.values(commute.sources ?? {}).sort((a, b) => a.country.localeCompare(b.country))) {
+      const tr = body.insertRow();
+      const link = document.createElement("a");
+      link.href = src.url; link.target = "_blank"; link.rel = "noopener";
+      link.textContent = `${src.agency} — ${src.dataset}`;
+      tr.insertCell().textContent = src.country;
+      tr.insertCell().appendChild(link);
+      tr.insertCell().textContent = src.period;
+      tr.insertCell().textContent = basis[src.basis] ?? src.basis;
+      tr.insertCell().textContent = src.licence;
+      for (const td of tr.cells) { td.style.textAlign = "left"; td.style.whiteSpace = "normal"; }
+    }
+  })
+  .catch(() => { document.getElementById("commutecoverage").textContent = "Commute data could not be loaded."; });
+</script>
 </body>
 </html>
